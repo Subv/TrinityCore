@@ -1913,7 +1913,10 @@ bool Player::BuildEnumData(PreparedQueryResult result, WorldPacket* data)
     *data << fields[11].GetFloat();                         // y
     *data << fields[12].GetFloat();                         // z
 
-    *data << uint32(fields[13].GetUInt32());                // guild id
+    if (uint32 guildId = fields[13].GetUInt32())
+        *data << uint64(MAKE_NEW_GUID(fields[13].GetUInt32(), 0, HIGHGUID_GUILD));                // guild guid
+    else
+        *data << uint64(0);
 
     uint32 charFlags = 0;
     uint32 playerFlags = fields[14].GetUInt32();

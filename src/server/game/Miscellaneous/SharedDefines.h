@@ -64,7 +64,7 @@ enum Races
     RACE_TROLL          = 8,
     RACE_GOBLIN         = 9,
     RACE_BLOODELF       = 10,
-    RACE_DRAENEI        = 11
+    RACE_DRAENEI        = 11,
     //RACE_FEL_ORC        = 12,
     //RACE_NAGA           = 13,
     //RACE_BROKEN         = 14,

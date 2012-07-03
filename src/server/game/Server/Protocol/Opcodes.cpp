@@ -165,7 +165,7 @@ void InitOpcodeTable()
     // OPCODE( CMSG_MESSAGECHAT_BATTLEGROUND,                STATUS_LOGGEDIN, PROCESS_THREADUNSAFE,  &WorldSession::HandleMessagechatOpcode         );
     // OPCODE( CMSG_MESSAGECHAT_BATTLEGROUND_LEADER,         STATUS_LOGGEDIN, PROCESS_THREADUNSAFE,  &WorldSession::HandleMessagechatOpcode         );
     // OPCODE( CMSG_MESSAGECHAT_RAID_WARNING,                STATUS_LOGGEDIN, PROCESS_THREADUNSAFE,  &WorldSession::HandleMessagechatOpcode         );
-    // OPCODE( SMSG_MESSAGECHAT,                             STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
+    OPCODE( SMSG_MESSAGECHAT,                             STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
     // OPCODE( CMSG_JOIN_CHANNEL,                            STATUS_LOGGEDIN, PROCESS_THREADUNSAFE,  &WorldSession::HandleJoinChannel               );
     // OPCODE( CMSG_LEAVE_CHANNEL,                           STATUS_LOGGEDIN, PROCESS_THREADUNSAFE,  &WorldSession::HandleLeaveChannel              );
     // OPCODE( SMSG_CHANNEL_NOTIFY,                          STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
@@ -253,7 +253,7 @@ void InitOpcodeTable()
     // OPCODE( CMSG_FORCE_MOVE_UNROOT_ACK,                   STATUS_LOGGEDIN, PROCESS_THREADUNSAFE,  &WorldSession::HandleMoveUnRootAck             );
     // OPCODE( MSG_MOVE_ROOT,                                STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_NULL                     );
     // OPCODE( MSG_MOVE_UNROOT,                              STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_NULL                     );
-    // OPCODE( MSG_MOVE_HEARTBEAT,                           STATUS_LOGGEDIN, PROCESS_THREADUNSAFE,  &WorldSession::HandleMovementOpcodes           );
+    OPCODE( MSG_MOVE_HEARTBEAT,                           STATUS_LOGGEDIN, PROCESS_THREADUNSAFE,  &WorldSession::HandleMovementOpcodes           );
     // OPCODE( SMSG_MOVE_KNOCK_BACK,                         STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
     // OPCODE( CMSG_MOVE_KNOCK_BACK_ACK,                     STATUS_LOGGEDIN, PROCESS_THREADUNSAFE,  &WorldSession::HandleMoveKnockBackAck          );
     // OPCODE( MSG_MOVE_KNOCK_BACK,                          STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_NULL                     );
@@ -547,7 +547,7 @@ void InitOpcodeTable()
     // OPCODE( SMSG_GMTICKET_GETTICKET,                      STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
     // OPCODE( CMSG_UNLEARN_TALENTS,                         STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_NULL                     );
     // OPCODE( SMSG_UPDATE_INSTANCE_ENCOUNTER_UNIT,          STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
-    // OPCODE( SMSG_GAMEOBJECT_DESPAWN_ANIM,                 STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
+    OPCODE( SMSG_GAMEOBJECT_DESPAWN_ANIM,                 STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
     // OPCODE( MSG_CORPSE_QUERY,                             STATUS_LOGGEDIN, PROCESS_THREADUNSAFE,  &WorldSession::HandleCorpseQueryOpcode         );
     // OPCODE( CMSG_GMTICKET_DELETETICKET,                   STATUS_LOGGEDIN, PROCESS_THREADUNSAFE,  &WorldSession::HandleGMTicketDeleteOpcode      );
     // OPCODE( SMSG_GMTICKET_DELETETICKET,                   STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
@@ -629,7 +629,7 @@ void InitOpcodeTable()
     // OPCODE( CMSG_STABLE_CHANGE_SLOT,                      STATUS_LOGGEDIN, PROCESS_THREADUNSAFE,  &WorldSession::HandleStableSwapPet             );
     // OPCODE( MSG_QUEST_PUSH_RESULT,                        STATUS_LOGGEDIN, PROCESS_THREADUNSAFE,  &WorldSession::HandleQuestPushResult           );
     // OPCODE( SMSG_PLAY_MUSIC,                              STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
-    // OPCODE( SMSG_PLAY_OBJECT_SOUND,                       STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
+    OPCODE( SMSG_PLAY_OBJECT_SOUND,                       STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
     // OPCODE( CMSG_REQUEST_PET_INFO,                        STATUS_LOGGEDIN, PROCESS_THREADUNSAFE,  &WorldSession::HandleRequestPetInfoOpcode      );
     // OPCODE( CMSG_FAR_SIGHT,                               STATUS_LOGGEDIN, PROCESS_THREADUNSAFE,  &WorldSession::HandleFarSightOpcode            );
     // OPCODE( SMSG_SPELLDISPELLOG,                          STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
@@ -718,7 +718,7 @@ void InitOpcodeTable()
     // OPCODE( CMSG_MOVE_FEATHER_FALL_ACK,                   STATUS_LOGGEDIN, PROCESS_THREADUNSAFE,  &WorldSession::HandleFeatherFallAck            );
     // OPCODE( CMSG_MOVE_WATER_WALK_ACK,                     STATUS_LOGGEDIN, PROCESS_THREADUNSAFE,  &WorldSession::HandleMoveWaterWalkAck          );
     // OPCODE( CMSG_MOVE_NOT_ACTIVE_MOVER,                   STATUS_LOGGEDIN, PROCESS_THREADUNSAFE,  &WorldSession::HandleMoveNotActiveMover        );
-    // OPCODE( SMSG_PLAY_SOUND,                              STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
+    OPCODE( SMSG_PLAY_SOUND,                              STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
     // OPCODE( CMSG_BATTLEFIELD_STATUS,                      STATUS_LOGGEDIN, PROCESS_THREADUNSAFE,  &WorldSession::HandleBattlefieldStatusOpcode   );
     // OPCODE( SMSG_BATTLEFIELD_STATUS1,                     STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
     // OPCODE( SMSG_BATTLEFIELD_STATUS2,                     STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );

@@ -264,7 +264,7 @@ void Object::BuildCreateUpdateBlockForPlayer(UpdateData* data, Player* target) c
 void Object::SendUpdateToPlayer(Player* player)
 {
     // send create update to player
-    UpdateData upd;
+    UpdateData upd(player->GetMapId());
     WorldPacket packet;
 
     BuildCreateUpdateBlockForPlayer(&upd, player);
@@ -443,11 +443,18 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
         *data << float(((Creature*)this)->GetOrientation());
     }
 
+    // 0x800 - AnimKits
+    if (flags & UPDATEFLAG_ANIMKITS)
+        *data << uint16(0) << uint16(0) << uint16(0);  // unk
+        
     // 0x200
     if (flags & UPDATEFLAG_ROTATION)
     {
         *data << int64(((GameObject*)this)->GetRotation());
     }
+    // 0x1000
+    if (flags & UPDATEFLAG_UNK3)
+        *data << uint8(0);  // unk counter to read uint32 values
 }
 
 void Object::_BuildValuesUpdate(uint8 updatetype, ByteBuffer * data, UpdateMask* updateMask, Player* target) const
@@ -500,7 +507,7 @@ void Object::_BuildValuesUpdate(uint8 updatetype, ByteBuffer * data, UpdateMask*
         }
     }
 
-    WPAssert(updateMask && updateMask->GetCount() == m_valuesCount);
+    ASSERT(updateMask && updateMask->GetCount() == m_valuesCount);
 
     *data << (uint8)updateMask->GetBlockCount();
     data->append(updateMask->GetMask(), updateMask->GetLength());

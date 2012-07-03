@@ -44,13 +44,17 @@ enum OBJECT_UPDATE_FLAGS
     UPDATEFLAG_STATIONARY_POSITION  = 0x0040,
     UPDATEFLAG_VEHICLE              = 0x0080,
     UPDATEFLAG_POSITION             = 0x0100,
-    UPDATEFLAG_ROTATION             = 0x0200
+    UPDATEFLAG_ROTATION             = 0x0200,
+    UPDATEFLAG_UNK3                 = 0x0400,
+    UPDATEFLAG_ANIMKITS             = 0x0800,
+    UPDATEFLAG_UNK5                 = 0x1000,
+    UPDATEFLAG_UNK6                 = 0x2000
 };
 
 class UpdateData
 {
     public:
-        UpdateData();
+        UpdateData(uint16 map);
 
         void AddOutOfRangeGUID(std::set<uint64>& guids);
         void AddOutOfRangeGUID(uint64 guid);
@@ -62,11 +66,10 @@ class UpdateData
         std::set<uint64> const& GetOutOfRangeGUIDs() const { return m_outOfRangeGUIDs; }
 
     protected:
+        uint16 _map;
         uint32 m_blockCount;
         std::set<uint64> m_outOfRangeGUIDs;
         ByteBuffer m_data;
-
-        void Compress(void* dst, uint32 *dst_size, void* src, int src_size);
 };
 #endif
 

@@ -39,11 +39,9 @@ static void DefineOpcode(uint32 opcode, const char* name, SessionStatus status, 
 void InitOpcodeTable()
 {
     for ( int i = 0; i < NUM_MSG_TYPES; ++i )
-    {
         DefineOpcode( i, "UNKNOWN", STATUS_NEVER, PROCESS_INPLACE,  &WorldSession::Handle_NULL );
-    }
 
-    // OPCODE( CMSG_WORLD_TELEPORT,                          STATUS_LOGGEDIN, PROCESS_THREADUNSAFE,  &WorldSession::HandleWorldTeleportOpcode       );
+    OPCODE( CMSG_WORLD_TELEPORT,                          STATUS_LOGGEDIN, PROCESS_THREADUNSAFE,  &WorldSession::HandleWorldTeleportOpcode       );
     // OPCODE( CMSG_TELEPORT_TO_UNIT,                        STATUS_LOGGEDIN, PROCESS_INPLACE,       &WorldSession::Handle_NULL                     );
     // OPCODE( SMSG_CHECK_FOR_BOTS,                          STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
     // OPCODE( CMSG_BOT_DETECTED2,                           STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_NULL                     );
@@ -53,10 +51,10 @@ void InitOpcodeTable()
     // OPCODE( SMSG_DESTRUCTIBLE_BUILDING_DAMAGE,            STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_NULL                     );
     OPCODE( CMSG_CHAR_CREATE,                             STATUS_AUTHED,   PROCESS_THREADUNSAFE,  &WorldSession::HandleCharCreateOpcode          );
     OPCODE( CMSG_CHAR_ENUM,                               STATUS_AUTHED,   PROCESS_THREADUNSAFE,  &WorldSession::HandleCharEnumOpcode            );
-    // OPCODE( CMSG_CHAR_DELETE,                             STATUS_AUTHED,   PROCESS_THREADUNSAFE,  &WorldSession::HandleCharDeleteOpcode          );
+    OPCODE( CMSG_CHAR_DELETE,                             STATUS_AUTHED,   PROCESS_THREADUNSAFE,  &WorldSession::HandleCharDeleteOpcode          );
     OPCODE( SMSG_CHAR_CREATE,                             STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
     OPCODE( SMSG_CHAR_ENUM,                               STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
-    // OPCODE( SMSG_CHAR_DELETE,                             STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
+    OPCODE( SMSG_CHAR_DELETE,                             STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
     // OPCODE( CMSG_WORLD_LOGIN,                             STATUS_AUTHED,   PROCESS_THREADUNSAFE,  &WorldSession::HandleWorldLoginOpcode          );
     // OPCODE( CMSG_PLAYER_LOGIN,                            STATUS_AUTHED,   PROCESS_THREADUNSAFE,  &WorldSession::HandlePlayerLoginOpcode         );
     // OPCODE( SMSG_NEW_WORLD,                               STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );

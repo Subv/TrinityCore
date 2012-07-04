@@ -56,7 +56,7 @@ void InitOpcodeTable()
     OPCODE( SMSG_CHAR_ENUM,                               STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
     OPCODE( SMSG_CHAR_DELETE,                             STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
     // OPCODE( CMSG_WORLD_LOGIN,                             STATUS_AUTHED,   PROCESS_THREADUNSAFE,  &WorldSession::HandleWorldLoginOpcode          );
-    // OPCODE( CMSG_PLAYER_LOGIN,                            STATUS_AUTHED,   PROCESS_THREADUNSAFE,  &WorldSession::HandlePlayerLoginOpcode         );
+    OPCODE( CMSG_PLAYER_LOGIN,                            STATUS_AUTHED,   PROCESS_THREADUNSAFE,  &WorldSession::HandlePlayerLoginOpcode         );
     // OPCODE( SMSG_NEW_WORLD,                               STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
     // OPCODE( SMSG_TRANSFER_PENDING,                        STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
     // OPCODE( SMSG_TRANSFER_ABORTED,                        STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
@@ -567,7 +567,7 @@ void InitOpcodeTable()
     // OPCODE( CMSG_GUILD_SWITCH_RANK,                       STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_NULL                     );
     // OPCODE( CMSG_GUILD_SET_NOTE,                          STATUS_LOGGEDIN, PROCESS_THREADUNSAFE,  &WorldSession::HandleGuildSetNoteOpcode        );
     // OPCODE( CMSG_GUILD_QUERY_TRADESKILL,                  STATUS_LOGGEDIN, PROCESS_THREADUNSAFE,  &WorldSession::HandleGuildQueryTradeSkill      );
-    // OPCODE( SMSG_LOGIN_VERIFY_WORLD,                      STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
+    OPCODE( SMSG_LOGIN_VERIFY_WORLD,                      STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
     // OPCODE( CMSG_CLEAR_EXPLORATION,                       STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_NULL                     );
     // OPCODE( CMSG_SEND_MAIL,                               STATUS_LOGGEDIN, PROCESS_THREADUNSAFE,  &WorldSession::HandleSendMail                  );
     // OPCODE( SMSG_SEND_MAIL_RESULT,                        STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
@@ -828,7 +828,7 @@ void InitOpcodeTable()
     // OPCODE( SMSG_DEFENSE_MESSAGE,                         STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
     // OPCODE( SMSG_INSTANCE_DIFFICULTY,                     STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
     // OPCODE( MSG_GM_RESETINSTANCELIMIT,                    STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_NULL                     );
-    // OPCODE( SMSG_MOTD,                                    STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
+    OPCODE( SMSG_MOTD,                                    STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
     // OPCODE( SMSG_MOVE_SET_FLIGHT,                         STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
     // OPCODE( SMSG_MOVE_UNSET_FLIGHT,                       STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
     // OPCODE( CMSG_MOVE_FLIGHT_ACK,                         STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_NULL                     );
@@ -967,7 +967,7 @@ void InitOpcodeTable()
     // OPCODE( MSG_RAID_READY_CHECK_FINISHED,                STATUS_LOGGEDIN, PROCESS_THREADUNSAFE,  &WorldSession::HandleRaidReadyCheckFinishedOpcode);
     // OPCODE( CMSG_COMPLAIN,                                STATUS_LOGGEDIN, PROCESS_THREADUNSAFE,  &WorldSession::HandleComplainOpcode            );
     // OPCODE( SMSG_COMPLAIN_RESULT,                         STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
-    // OPCODE( SMSG_FEATURE_SYSTEM_STATUS,                   STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
+    OPCODE( SMSG_FEATURE_SYSTEM_STATUS,                   STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
     // OPCODE( CMSG_GM_SHOW_COMPLAINTS,                      STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_NULL                     );
     // OPCODE( CMSG_GM_UNSQUELCH,                            STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_NULL                     );
     // OPCODE( CMSG_CHANNEL_SILENCE_VOICE,                   STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_NULL                     );
@@ -1107,7 +1107,7 @@ void InitOpcodeTable()
     // OPCODE( SMSG_DANCE_QUERY_RESPONSE,                    STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
     // OPCODE( SMSG_INVALIDATE_DANCE,                        STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
     // OPCODE( CMSG_DELETE_DANCE,                            STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_NULL                     );
-    // OPCODE( SMSG_LEARNED_DANCE_MOVES,                     STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
+    OPCODE( SMSG_LEARNED_DANCE_MOVES,                     STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
     // OPCODE( CMSG_LEARN_DANCE_MOVE,                        STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_NULL                     );
     // OPCODE( CMSG_UNLEARN_DANCE_MOVE,                      STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_NULL                     );
     // OPCODE( CMSG_SET_RUNE_COUNT,                          STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_NULL                     );
@@ -1197,7 +1197,7 @@ void InitOpcodeTable()
     // OPCODE( CMSG_PLAYER_VEHICLE_ENTER,                    STATUS_LOGGEDIN, PROCESS_THREADUNSAFE,  &WorldSession::HandleEnterPlayerVehicle        );
     // OPCODE( CMSG_EJECT_PASSENGER,                         STATUS_LOGGEDIN, PROCESS_THREADUNSAFE,  &WorldSession::HandleEjectPassenger            );
     // OPCODE( SMSG_PET_GUIDS,                               STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
-    // OPCODE( SMSG_CLIENTCACHE_VERSION,                     STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
+    OPCODE( SMSG_CLIENTCACHE_VERSION,                     STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
     // OPCODE( SMSG_ITEM_REFUND_INFO_RESPONSE,               STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
     // OPCODE( CMSG_ITEM_REFUND_INFO,                        STATUS_LOGGEDIN, PROCESS_THREADUNSAFE,  &WorldSession::HandleItemRefundInfoRequest     );
     // OPCODE( CMSG_ITEM_REFUND,                             STATUS_LOGGEDIN, PROCESS_THREADUNSAFE,  &WorldSession::HandleItemRefund                );

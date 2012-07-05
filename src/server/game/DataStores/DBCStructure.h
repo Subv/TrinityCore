@@ -1331,6 +1331,12 @@ struct MovieEntry
 
 #define MAX_OVERRIDE_SPELL 10
 
+struct NumTalentsAtLevelEntry
+{
+    //uint32 Level;                                         // 0 index
+    float Talents;                                         // 1 talent count
+};
+
 struct OverrideSpellDataEntry
 {
     uint32      id;                                         // 0
@@ -1808,6 +1814,14 @@ struct TalentTabEntry
     uint32  petTalentMask;                                  // 21
     uint32  tabpage;                                        // 22
     //char* internalname;                                   // 23
+};
+
+struct TalentTreePrimarySpellsEntry
+{
+    //uint32 Id;                                            // 0 index
+    uint32 TalentTree;                                      // 1 entry from TalentTab.dbc
+    uint32 SpellId;                                         // 2 spell id to learn
+    //uint32 Flags;                                         // 3 some kind of flags
 };
 
 struct TaxiNodesEntry

@@ -592,7 +592,7 @@ void InitOpcodeTable()
     // OPCODE( SMSG_PERIODICAURALOG,                         STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
     // OPCODE( SMSG_SPELLDAMAGESHIELD,                       STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
     // OPCODE( SMSG_SPELLNONMELEEDAMAGELOG,                  STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
-    // OPCODE( CMSG_LEARN_TALENT,                            STATUS_LOGGEDIN, PROCESS_THREADUNSAFE,  &WorldSession::HandleLearnTalentOpcode         );
+    OPCODE( CMSG_LEARN_TALENT,                            STATUS_LOGGEDIN, PROCESS_THREADUNSAFE,  &WorldSession::HandleLearnTalentOpcode         );
     // OPCODE( SMSG_RESURRECT_FAILED,                        STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
     // OPCODE( CMSG_TOGGLE_PVP,                              STATUS_LOGGEDIN, PROCESS_THREADUNSAFE,  &WorldSession::HandleTogglePvP                 );
     // OPCODE( SMSG_ZONE_UNDER_ATTACK,                       STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
@@ -1149,7 +1149,7 @@ void InitOpcodeTable()
     // OPCODE( CMSG_REQUEST_VEHICLE_PREV_SEAT,               STATUS_LOGGEDIN, PROCESS_THREADUNSAFE,  &WorldSession::HandleChangeSeatsOnControlledVehicle);
     // OPCODE( CMSG_REQUEST_VEHICLE_NEXT_SEAT,               STATUS_LOGGEDIN, PROCESS_THREADUNSAFE,  &WorldSession::HandleChangeSeatsOnControlledVehicle);
     // OPCODE( CMSG_REQUEST_VEHICLE_SWITCH_SEAT,             STATUS_LOGGEDIN, PROCESS_THREADUNSAFE,  &WorldSession::HandleChangeSeatsOnControlledVehicle);
-    // OPCODE( CMSG_PET_LEARN_TALENT,                        STATUS_LOGGEDIN, PROCESS_THREADUNSAFE,  &WorldSession::HandlePetLearnTalent            );
+    OPCODE( CMSG_PET_LEARN_TALENT,                        STATUS_LOGGEDIN, PROCESS_THREADUNSAFE,  &WorldSession::HandlePetLearnTalent            );
     // OPCODE( CMSG_PET_UNLEARN_TALENTS,                     STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_NULL                     );
     // OPCODE( SMSG_SET_PHASE_SHIFT,                         STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
     // OPCODE( SMSG_ALL_ACHIEVEMENT_DATA,                    STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
@@ -1212,8 +1212,8 @@ void InitOpcodeTable()
     // OPCODE( CMSG_UPDATE_PROJECTILE_POSITION,              STATUS_LOGGEDIN, PROCESS_THREADUNSAFE,  &WorldSession::HandleUpdateProjectilePosition  );
     // OPCODE( SMSG_SET_PROJECTILE_POSITION,                 STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
     // OPCODE( SMSG_TALENTS_INFO,                            STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
-    // OPCODE( CMSG_LEARN_PREVIEW_TALENTS,                   STATUS_LOGGEDIN, PROCESS_THREADUNSAFE,  &WorldSession::HandleLearnPreviewTalents       );
-    // OPCODE( CMSG_LEARN_PREVIEW_TALENTS_PET,               STATUS_LOGGEDIN, PROCESS_THREADUNSAFE,  &WorldSession::HandleLearnPreviewTalentsPet    );
+    OPCODE( CMSG_LEARN_PREVIEW_TALENTS,                   STATUS_LOGGEDIN, PROCESS_THREADUNSAFE,  &WorldSession::HandleLearnPreviewTalents       );
+    OPCODE( CMSG_LEARN_PREVIEW_TALENTS_PET,               STATUS_LOGGEDIN, PROCESS_THREADUNSAFE,  &WorldSession::HandleLearnPreviewTalentsPet    );
     // OPCODE( SMSG_ARENA_OPPONENT_UPDATE,                   STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
     // OPCODE( SMSG_ARENA_TEAM_CHANGE_FAILED_QUEUED,         STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
     // OPCODE( SMSG_MULTIPLE_PACKETS,                        STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
@@ -1280,6 +1280,6 @@ void InitOpcodeTable()
     // OPCODE( CMSG_GUILD_UPDATE_PARTY_STATE,                STATUS_LOGGEDIN, PROCESS_INPLACE,       &WorldSession::HandleGuildPartyStateUpdate     );
     // OPCODE( CMSG_GUILD_QUERY_NEWS,                        STATUS_LOGGEDIN, PROCESS_INPLACE,       &WorldSession::HandleGuildQueryNews            );
     // OPCODE( SMSG_UNKNOWN_1310,                            STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
-    // OPCODE( CMSG_RETURN_TO_GRAVEYARD,                     STATUS_LOGGEDIN, PROCESS_THREADUNSAFE,  &WorldSession::HandleMoveToGraveyard           );
+    OPCODE( CMSG_RETURN_TO_GRAVEYARD,                     STATUS_LOGGEDIN, PROCESS_THREADUNSAFE,  &WorldSession::HandleMoveToGraveyard           );
     // OPCODE( CMSG_REFORGE_ITEM,                            STATUS_LOGGEDIN, PROCESS_INPLACE,       &WorldSession::HandleReforgeItem               );
 }

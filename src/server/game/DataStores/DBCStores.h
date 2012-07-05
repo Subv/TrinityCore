@@ -59,6 +59,7 @@ MapDifficulty const* GetMapDifficultyData(uint32 mapId, Difficulty difficulty);
 MapDifficulty const* GetDownscaledMapDifficultyData(uint32 mapId, Difficulty &difficulty);
 
 uint32 const* /*[MAX_TALENT_TABS]*/ GetTalentTabPages(uint8 cls);
+std::vector<uint32> const* GetTalentTreePrimarySpells(uint32 talentTree);
 
 uint32 GetLiquidFlags(uint32 liquidType);
 
@@ -126,6 +127,7 @@ extern DBCStorage <LockEntry>                    sLockStore;
 extern DBCStorage <MailTemplateEntry>            sMailTemplateStore;
 extern DBCStorage <MapEntry>                     sMapStore;
 //extern DBCStorage <MapDifficultyEntry>           sMapDifficultyStore; -- use GetMapDifficultyData insteed
+extern DBCStorage <NumTalentsAtLevelEntry>       sNumTalentsAtLevelStore;
 extern MapDifficultyMap                          sMapDifficultyMap;
 extern DBCStorage <MovieEntry>                   sMovieStore;
 extern DBCStorage <OverrideSpellDataEntry>       sOverrideSpellDataStore;

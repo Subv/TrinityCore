@@ -52,6 +52,7 @@ set(shared_STAT_SRCS
 
 include_directories(
   ${CMAKE_BINARY_DIR}
+  ${CMAKE_SOURCE_DIR}/dep/zlib
   ${CMAKE_SOURCE_DIR}/dep/SFMT
   ${CMAKE_SOURCE_DIR}/dep/sockets/include
   ${CMAKE_SOURCE_DIR}/dep/utf8cpp
@@ -68,8 +69,11 @@ include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}/Threading
   ${CMAKE_CURRENT_SOURCE_DIR}/Utilities
   ${CMAKE_SOURCE_DIR}/src/server/game/Entities/Object
-  ${CMAKE_SOURCE_DIR}/src/server/game/World
-  ${CMAKE_SOURCE_DIR}/src/server/game/Miscellaneous
+  ${CMAKE_SOURCE_DIR}/src/server/game/World  
+  ${CMAKE_SOURCE_DIR}/src/server/game/Addons    
+  ${CMAKE_SOURCE_DIR}/src/server/game/Server 
+  ${CMAKE_SOURCE_DIR}/src/server/game/Server/Protocol 
+  ${CMAKE_SOURCE_DIR}/src/server/game/Miscellaneous   
   ${ACE_INCLUDE_DIR}
   ${MYSQL_INCLUDE_DIR}
   ${OPENSSL_INCLUDE_DIR}

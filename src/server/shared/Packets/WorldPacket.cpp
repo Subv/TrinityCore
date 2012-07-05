@@ -24,9 +24,6 @@
 
 void WorldPacket::compress(uint32 opcode)
 {
-    if (opcode == OPCODE_NOT_FOUND)  // this just doesn't look right, atm not using that define opcode way.
-        return;
-
     uint32 uncompressedOpcode = GetOpcode();
     uint32 size = wpos();
     uint32 destsize = compressBound(size);

@@ -1803,6 +1803,7 @@ struct SummonPropertiesEntry
 #define MAX_TALENT_RANK 5
 #define MAX_PET_TALENT_RANK 3                               // use in calculations, expected <= MAX_TALENT_RANK
 #define MAX_TALENT_TABS 3
+#define MAX_TALENT_MASTERY_SPELLS 2
 
 struct TalentEntry
 {
@@ -1824,14 +1825,15 @@ struct TalentEntry
 struct TalentTabEntry
 {
     uint32  TalentTabID;                                    // 0
-    //char* name[16];                                       // 1-16, unused
-    //uint32  nameFlags;                                    // 17, unused
-    //unit32  spellicon;                                    // 18
-                                                            // 19 not used
-    uint32  ClassMask;                                      // 20
-    uint32  petTalentMask;                                  // 21
-    uint32  tabpage;                                        // 22
-    //char* internalname;                                   // 23
+    //char* name;                                           // 1 unused  m_name_lang
+    //unit32  spellicon;                                    // 2         m_spellIconID
+    uint32  ClassMask;                                      // 3         m_classMask
+    uint32  petTalentMask;                                  // 4         m_petTalentMask
+    uint32  tabpage;                                        // 5         m_orderIndex
+    //char* internalname;                                   // 6 unused  m_backgroundFile
+    //char* description;                                    // 7 unused
+    //uint32  roleMask;                                     // 8 unused (2 tank; 4 healer; 8 damage dealer)
+    uint32  masterySpell[MAX_TALENT_MASTERY_SPELLS];        // 9-10 passive mastery bonus spells
 };
 
 struct TalentTreePrimarySpellsEntry

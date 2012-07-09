@@ -348,7 +348,7 @@ public:
             if ((skillInfo->categoryId == SKILL_CATEGORY_PROFESSION || skillInfo->categoryId == SKILL_CATEGORY_SECONDARY) &&
                 skillInfo->canLink)                             // only prof. with recipes have
             {
-                HandleLearnSkillRecipesHelper(handler->GetSession()->GetPlayer(), skillInfo->id);
+                HandleLearnSkillRecipesHelper(handler->GetSession()->GetPlayer(), skillInfo->Id);
             }
         }
 
@@ -393,42 +393,23 @@ public:
                 !skillInfo->canLink)                            // only prof with recipes have set
                 continue;
 
-            int locale = handler->GetSessionDbcLocale();
-            name = skillInfo->name[locale];
+            name = skillInfo->name;
             if (name.empty())
                 continue;
 
             if (!Utf8FitTo(name, namePart))
-            {
-                locale = 0;
-                for (; locale < TOTAL_LOCALES; ++locale)
-                {
-                    if (locale == handler->GetSessionDbcLocale())
-                        continue;
+                continue;
 
-                    name = skillInfo->name[locale];
-                    if (name.empty())
-                        continue;
-
-                    if (Utf8FitTo(name, namePart))
-                        break;
-                }
-            }
-
-            if (locale < TOTAL_LOCALES)
-            {
-                targetSkillInfo = skillInfo;
-                break;
-            }
+            targetSkillInfo = skillInfo;
         }
 
         if (!targetSkillInfo)
             return false;
 
-        HandleLearnSkillRecipesHelper(target, targetSkillInfo->id);
+        HandleLearnSkillRecipesHelper(target, targetSkillInfo->Id);
 
-        uint16 maxLevel = target->GetPureMaxSkillValue(targetSkillInfo->id);
-        target->SetSkill(targetSkillInfo->id, target->GetSkillStep(targetSkillInfo->id), maxLevel, maxLevel);
+        uint16 maxLevel = target->GetPureMaxSkillValue(targetSkillInfo->Id);
+        target->SetSkill(targetSkillInfo->id, target->GetSkillStep(targetSkillInfo->Id), maxLevel, maxLevel);
         handler->PSendSysMessage(LANG_COMMAND_LEARN_ALL_RECIPES, name.c_str());
         return true;
     }

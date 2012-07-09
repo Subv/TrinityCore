@@ -22,7 +22,7 @@
 
 #include <zlib.h>
 
-void WorldPacket::compress(uint32 opcode)
+void WorldPacket::Compress(uint32 opcode)
 {
     uint32 uncompressedOpcode = GetOpcode();
     uint32 size = wpos();

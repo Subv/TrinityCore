@@ -165,15 +165,15 @@ bool ItemChatLink::Initialize(std::istringstream& iss)
     return true;
 }
 
-inline std::string ItemChatLink::FormatName(uint8 index, ItemLocale const* locale, char* const* suffixStrings) const
+inline std::string ItemChatLink::FormatName(uint8 index, ItemLocale const* locale, char* suffixString) const
 {
     std::stringstream ss;
     if (locale == NULL || index >= locale->Name.size())
         ss << _item->Name1;
     else
         ss << locale->Name[index];
-    if (suffixStrings)
-        ss << ' ' << suffixStrings[index];
+    if (suffixString)
+        ss << ' ' << suffixString;
     return ss.str();
 }
 
@@ -181,15 +181,15 @@ bool ItemChatLink::ValidateName(char* buffer, const char* context)
 {
     ChatLink::ValidateName(buffer, context);
 
-    char* const* suffixStrings = _suffix ? _suffix->nameSuffix : (_property ? _property->nameSuffix : NULL);
+    char* suffixString = _suffix ? _suffix->nameSuffix : (_property ? _property->nameSuffix : NULL);
 
-    bool res = (FormatName(LOCALE_enUS, NULL, suffixStrings) == buffer);
+    bool res = (FormatName(LOCALE_enUS, NULL, suffixString) == buffer);
     if (!res)
     {
         ItemLocale const* il = sObjectMgr->GetItemLocale(_item->ItemId);
         for (uint8 index = LOCALE_koKR; index < TOTAL_LOCALES; ++index)
         {
-            if (FormatName(index, il, suffixStrings) == buffer)
+            if (FormatName(index, il, suffixString) == buffer)
             {
                 res = true;
                 break;
@@ -306,8 +306,8 @@ bool SpellChatLink::ValidateName(char* buffer, const char* context)
 
         for (uint8 i = 0; i < TOTAL_LOCALES; ++i)
         {
-            uint32 skillLineNameLength = strlen(skillLine->name[i]);
-            if (skillLineNameLength > 0 && strncmp(skillLine->name[i], buffer, skillLineNameLength) == 0)
+            uint32 skillLineNameLength = strlen(skillLine->name);
+            if (skillLineNameLength > 0 && strncmp(skillLine->name, buffer, skillLineNameLength) == 0)
             {
                 // found the prefix, remove it to perform spellname validation below
                 // -2 = strlen(": ")
@@ -317,17 +317,12 @@ bool SpellChatLink::ValidateName(char* buffer, const char* context)
         }
     }
 
-    bool res = false;
-    for (uint8 i = 0; i < TOTAL_LOCALES; ++i)
-        if (*_spell->SpellName[i] && strcmp(_spell->SpellName[i], buffer) == 0)
-        {
-            res = true;
-            break;
-        }
 
-    if (!res)
-        sLog->outDebug(LOG_FILTER_CHATSYS, "ChatHandler::isValidChatMessage('%s'): linked spell (id: %u) name wasn't found in any localization", context, _spell->Id);
-    return res;
+    if (strcmp(_spell->SpellName, buffer) == 0)
+        return true;
+
+    sLog->outDebug(LOG_FILTER_CHATSYS, "ChatHandler::isValidChatMessage('%s'): linked spell (id: %u) name wasn't found in any localization", context, _spell->Id);
+    return false;
 }
 
 // |color|Hachievement:achievement_id:player_guid:0:0:0:0:0:0:0:0|h[name]|h|r
@@ -381,7 +376,7 @@ bool AchievementChatLink::ValidateName(char* buffer, const char* context)
 
     bool res = false;
     for (uint8 i = 0; i < TOTAL_LOCALES; ++i)
-        if (*_achievement->name[i] && strcmp(_achievement->name[i], buffer) == 0)
+        if (*_achievement->name && strcmp(_achievement->name, buffer) == 0)
         {
             res = true;
             break;

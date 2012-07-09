@@ -6522,7 +6522,7 @@ std::string ObjectMgr::GeneratePetName(uint32 entry)
     if (list0.empty() || list1.empty())
     {
         CreatureTemplate const* cinfo = GetCreatureTemplate(entry);
-        char* petname = GetPetName(cinfo->family, sWorld->GetDefaultDbcLocale());
+        char* petname = GetPetName(cinfo->family);
         if (!petname)
             return cinfo->Name;
 
@@ -7584,20 +7584,20 @@ SkillRangeType GetSkillRangeType(SkillLineEntry const* pSkill, bool racial)
     {
         case SKILL_CATEGORY_LANGUAGES: return SKILL_RANGE_LANGUAGE;
         case SKILL_CATEGORY_WEAPON:
-            if (pSkill->id != SKILL_FIST_WEAPONS)
+            if (pSkill->Id != SKILL_FIST_WEAPONS)
                 return SKILL_RANGE_LEVEL;
             else
                 return SKILL_RANGE_MONO;
         case SKILL_CATEGORY_ARMOR:
         case SKILL_CATEGORY_CLASS:
-            if (pSkill->id != SKILL_LOCKPICKING)
+            if (pSkill->Id != SKILL_LOCKPICKING)
                 return SKILL_RANGE_MONO;
             else
                 return SKILL_RANGE_LEVEL;
         case SKILL_CATEGORY_SECONDARY:
         case SKILL_CATEGORY_PROFESSION:
             // not set skills for professions and racial abilities
-            if (IsProfessionSkill(pSkill->id))
+            if (IsProfessionSkill(pSkill->Id))
                 return SKILL_RANGE_RANK;
             else if (racial)
                 return SKILL_RANGE_NONE;

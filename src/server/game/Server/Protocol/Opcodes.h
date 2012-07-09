@@ -120,6 +120,7 @@ enum Opcodes
     CMSG_GUILD_INVITE                                = 0x02DA8, // 4.0.6a 13623, opcode 11688
     SMSG_GUILD_INVITE                                = 0x0010C, // 4.0.6a 13623
     CMSG_GUILD_ACCEPT                                = 0x03729, // 4.0.6a 13623
+    CMSG_GUILD_ACHIEVEMENT_PROGRESS_QUERY            = 0x00000,
     CMSG_GUILD_DECLINE                               = 0x0352D, // 4.0.6a 13623
     SMSG_GUILD_DECLINE                               = 0x0B78C, // 4.0.6a 13623
     CMSG_GUILD_INFO                                  = 0x06884, // 4.0.6a 13623
@@ -1205,6 +1206,7 @@ enum Opcodes
     SMSG_ON_CANCEL_EXPECTED_RIDE_VEHICLE_AURA        = 0x03380, // 4.0.6a 13623
     SMSG_CRITERIA_DELETED                            = 0x0AF84, // 4.0.6a 13623
     SMSG_ACHIEVEMENT_DELETED                         = 0x0E6A0, // 4.0.6a 13623
+    SMSG_GUILD_ACHIEVEMENT_DELETED                   = 0x0415E, // 4.0.6a 13623
     CMSG_SERVER_INFO_QUERY                           = 0x101F6, // Unknown opcode ID
     SMSG_SERVER_INFO_RESPONSE                        = 0x101F7, // Unknown opcode ID
     CMSG_CHECK_LOGIN_CRITERIA                        = 0x101F8, // Unknown opcode ID

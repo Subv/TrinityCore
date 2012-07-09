@@ -767,59 +767,41 @@ public:
             SkillLineEntry const* skillInfo = sSkillLineStore.LookupEntry(id);
             if (skillInfo)
             {
-                int locale = handler->GetSessionDbcLocale();
-                std::string name = skillInfo->name[locale];
+                std::string name = skillInfo->name;
                 if (name.empty())
                     continue;
 
                 if (!Utf8FitTo(name, wNamePart))
+                    continue;
+
+                if (maxResults && count++ == maxResults)
                 {
-                    locale = 0;
-                    for (; locale < TOTAL_LOCALES; ++locale)
-                    {
-                        if (locale == handler->GetSessionDbcLocale())
-                            continue;
-
-                        name = skillInfo->name[locale];
-                        if (name.empty())
-                            continue;
-
-                        if (Utf8FitTo(name, wNamePart))
-                            break;
-                    }
+                    handler->PSendSysMessage(LANG_COMMAND_LOOKUP_MAX_RESULTS, maxResults);
+                    return true;
                 }
 
-                if (locale < TOTAL_LOCALES)
+                char valStr[50] = "";
+                char const* knownStr = "";
+                if (target && target->HasSkill(id))
                 {
-                    if (maxResults && count++ == maxResults)
-                    {
-                        handler->PSendSysMessage(LANG_COMMAND_LOOKUP_MAX_RESULTS, maxResults);
-                        return true;
-                    }
+                    knownStr = handler->GetTrinityString(LANG_KNOWN);
+                    uint32 curValue = target->GetPureSkillValue(id);
+                    uint32 maxValue  = target->GetPureMaxSkillValue(id);
+                    uint32 permValue = target->GetSkillPermBonusValue(id);
+                    uint32 tempValue = target->GetSkillTempBonusValue(id);
 
-                    char valStr[50] = "";
-                    char const* knownStr = "";
-                    if (target && target->HasSkill(id))
-                    {
-                        knownStr = handler->GetTrinityString(LANG_KNOWN);
-                        uint32 curValue = target->GetPureSkillValue(id);
-                        uint32 maxValue  = target->GetPureMaxSkillValue(id);
-                        uint32 permValue = target->GetSkillPermBonusValue(id);
-                        uint32 tempValue = target->GetSkillTempBonusValue(id);
-
-                        char const* valFormat = handler->GetTrinityString(LANG_SKILL_VALUES);
-                        snprintf(valStr, 50, valFormat, curValue, maxValue, permValue, tempValue);
-                    }
-
-                    // send skill in "id - [namedlink locale]" format
-                    if (handler->GetSession())
-                        handler->PSendSysMessage(LANG_SKILL_LIST_CHAT, id, id, name.c_str(), localeNames[locale], knownStr, valStr);
-                    else
-                        handler->PSendSysMessage(LANG_SKILL_LIST_CONSOLE, id, name.c_str(), localeNames[locale], knownStr, valStr);
-
-                    if (!found)
-                        found = true;
+                    char const* valFormat = handler->GetTrinityString(LANG_SKILL_VALUES);
+                    snprintf(valStr, 50, valFormat, curValue, maxValue, permValue, tempValue);
                 }
+
+                // send skill in "id - [namedlink locale]" format
+                if (handler->GetSession())
+                    handler->PSendSysMessage(LANG_SKILL_LIST_CHAT, id, id, name.c_str(), localeNames[locale], knownStr, valStr);
+                else
+                    handler->PSendSysMessage(LANG_SKILL_LIST_CONSOLE, id, name.c_str(), localeNames[locale], knownStr, valStr);
+
+                if (!found)
+                    found = true;
             }
         }
         if (!found)

@@ -3509,7 +3509,7 @@ enum SpellFamilyNames
 
 
 // stored in character_pet.slot
-enum PetSlot
+/*enum PetSlot
 {
     PET_SLOT_DEFAULT         =   0,
     //Some not-in-db slots
@@ -3529,7 +3529,7 @@ enum PetSlot
     PET_SLOT_OTHER_PET       = 100,        // PetType != HUNTER_PET
 };
 
-#define MAX_PET_STABLES         PET_SLOT_STABLE_LAST
+#define MAX_PET_STABLES         PET_SLOT_STABLE_LAST*/
 
 enum TradeStatus
 {

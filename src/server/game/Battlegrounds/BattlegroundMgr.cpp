@@ -178,10 +178,11 @@ void BattlegroundMgr::Update(uint32 diff)
     }
 }
 
+//! TODO: Implement
 void BattlegroundMgr::BuildBattlegroundStatusPacket(WorldPacket* data, Battleground* bg, uint8 QueueSlot, uint8 StatusID, uint32 Time1, uint32 Time2, uint8 arenatype, uint8 uiFrame)
 {
     // we can be in 2 queues in same time...
-
+/*
     if (StatusID == 0 || !bg)
     {
         data->Initialize(SMSG_BATTLEFIELD_STATUS, 4+8);
@@ -229,6 +230,7 @@ void BattlegroundMgr::BuildBattlegroundStatusPacket(WorldPacket* data, Battlegro
             sLog->outError("Unknown BG status!");
             break;
     }
+    */
 }
 
 void BattlegroundMgr::BuildPvpLogDataPacket(WorldPacket* data, Battleground* bg)
@@ -708,7 +710,7 @@ void BattlegroundMgr::CreateInitialBattlegrounds()
 
         CreateBattlegroundData data;
         data.bgTypeId = BattlegroundTypeId(bgTypeID_);
-        data.IsArena = (bl->type == TYPE_ARENA);
+        data.IsArena = (bl->MapType == TYPE_ARENA);
         data.MinPlayersPerTeam = fields[1].GetUInt16();
         data.MaxPlayersPerTeam = fields[2].GetUInt16();
         data.LevelMin = fields[3].GetUInt8();
@@ -775,7 +777,7 @@ void BattlegroundMgr::CreateInitialBattlegrounds()
         
         selectionWeight = fields[10].GetUInt8();
         data.scriptId = sObjectMgr->GetScriptId(fields[11].GetCString());
-        data.BattlegroundName = bl->name[sWorld->GetDefaultDbcLocale()];
+        data.BattlegroundName = bl->name;
         data.MapID = bl->mapid[0];
 
         if (!CreateBattleground(data))

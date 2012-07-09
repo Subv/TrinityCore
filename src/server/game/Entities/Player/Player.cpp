@@ -2987,15 +2987,20 @@ void Player::GiveLevel(uint8 level)
     PlayerLevelInfo info;
     sObjectMgr->GetPlayerLevelInfo(getRace(), getClass(), level, &info);
 
-    PlayerClassLevelInfo classInfo;
-    sObjectMgr->GetPlayerClassLevelInfo(getClass(), level, &classInfo);
+    GtOCTBaseHPByClassEntry* hpByClass = sGtOCTBaseHPByClassStore.LookupEntry((getClass()-1)*GT_MAX_LEVEL + level-1);
+    GtOCTBaseMPByClassEntry* mpByClass = sGtOCTBaseMPByClassStore.LookupEntry((getClass()-1)*GT_MAX_LEVEL + level-1);
+    if (!hpByClass || !mpByClass)
+    {
+        sLog->outError("Player %s (Guid: %u) has invalid data for HealthPoints and ManaPoints by class (class: %u, level: %u)", GetName(), GetGUIDLow(), getClass(), level);
+        return;
+    }
 
     // send levelup info to client
     WorldPacket data(SMSG_LEVELUP_INFO, (4+4+MAX_POWERS*4+MAX_STATS*4));
     data << uint32(level);
-    data << uint32(int32(classInfo.basehealth) - int32(GetCreateHealth()));
+    data << uint32(int32(hpByClass->value) - int32(GetCreateHealth()));
     // for (int i = 0; i < MAX_POWERS; ++i)                  // Powers loop (0-6)
-    data << uint32(int32(classInfo.basemana)   - int32(GetCreateMana()));
+    data << uint32(int32(mpByClass->value)   - int32(GetCreateMana()));
     data << uint32(0);
     data << uint32(0);
     data << uint32(0);
@@ -3023,8 +3028,8 @@ void Player::GiveLevel(uint8 level)
     for (uint8 i = STAT_STRENGTH; i < MAX_STATS; ++i)
         SetCreateStat(Stats(i), info.stats[i]);
 
-    SetCreateHealth(classInfo.basehealth);
-    SetCreateMana(classInfo.basemana);
+    SetCreateHealth(hpByClass->value);
+    SetCreateMana(mpByClass->value);
 
     InitTalentForLevel();
     InitTaxiNodesForLevel();
@@ -3119,8 +3124,13 @@ void Player::InitStatsForLevel(bool reapplyMods)
     if (reapplyMods)                                        //reapply stats values only on .reset stats (level) command
         _RemoveAllStatBonuses();
 
-    PlayerClassLevelInfo classInfo;
-    sObjectMgr->GetPlayerClassLevelInfo(getClass(), getLevel(), &classInfo);
+    GtOCTBaseHPByClassEntry* hpByClass = sGtOCTBaseHPByClassStore.LookupEntry((getClass()-1)*GT_MAX_LEVEL + level-1);
+    GtOCTBaseMPByClassEntry* mpByClass = sGtOCTBaseMPByClassStore.LookupEntry((getClass()-1)*GT_MAX_LEVEL + level-1);
+    if (!hpByClass || !mpByClass)
+    {
+        sLog->outError("Player %s (Guid: %u) has invalid data for HealthPoints and ManaPoints by class (class: %u, level: %u)", GetName(), GetGUIDLow(), getClass(), level);
+        return;
+    }
 
     PlayerLevelInfo info;
     sObjectMgr->GetPlayerLevelInfo(getRace(), getClass(), getLevel(), &info);
@@ -3146,10 +3156,10 @@ void Player::InitStatsForLevel(bool reapplyMods)
     for (uint8 i = STAT_STRENGTH; i < MAX_STATS; ++i)
         SetStat(Stats(i), info.stats[i]);
 
-    SetCreateHealth(classInfo.basehealth);
+    SetCreateHealth(hpByClass->value);
 
     //set create powers
-    SetCreateMana(classInfo.basemana);
+    SetCreateMana(mpByClass->value);
 
     SetArmor(int32(m_createStats[STAT_AGILITY]*2));
 
@@ -3231,7 +3241,7 @@ void Player::InitStatsForLevel(bool reapplyMods)
     for (uint8 i = POWER_MANA; i < MAX_POWERS; ++i)
         SetMaxPower(Powers(i),  uint32(GetCreatePowers(Powers(i))));
 
-    SetMaxHealth(classInfo.basehealth);                     // stamina bonus will applied later
+    SetMaxHealth(hpByClass->value);                     // stamina bonus will applied later
 
     // cleanup mounted state (it will set correctly at aura loading if player saved at mount.
     SetUInt32Value(UNIT_FIELD_MOUNTDISPLAYID, 0);

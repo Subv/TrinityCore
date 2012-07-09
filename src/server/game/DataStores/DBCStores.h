@@ -45,7 +45,8 @@ enum ContentLevels
 {
     CONTENT_1_60 = 0,
     CONTENT_61_70,
-    CONTENT_71_80
+    CONTENT_71_80,
+    CONTENT_81_85
 };
 ContentLevels GetContentLevelsForMapAndZone(uint32 mapid, uint32 zoneId);
 
@@ -108,14 +109,28 @@ extern DBCStorage <GtChanceToMeleeCritEntry>     sGtChanceToMeleeCritStore;
 extern DBCStorage <GtChanceToSpellCritBaseEntry> sGtChanceToSpellCritBaseStore;
 extern DBCStorage <GtChanceToSpellCritEntry>     sGtChanceToSpellCritStore;
 extern DBCStorage <GtOCTClassCombatRatingScalarEntry> sGtOCTClassCombatRatingScalarStore;
-extern DBCStorage <GtOCTRegenHPEntry>            sGtOCTRegenHPStore;
+extern DBCStorage <GtOCTBaseHPByClassEntry>           sGtOCTBaseHPByClassStore;
+extern DBCStorage <GtOCTBaseMPByClassEntry>           sGtOCTBaseMPByClassStore;
+extern DBCStorage <GtOCTHPPerStaminaEntry>           sGtOCTHPPerStaminaStore;
 //extern DBCStorage <GtOCTRegenMPEntry>            sGtOCTRegenMPStore; -- not used currently
-extern DBCStorage <GtRegenHPPerSptEntry>         sGtRegenHPPerSptStore;
 extern DBCStorage <GtRegenMPPerSptEntry>         sGtRegenMPPerSptStore;
-extern DBCStorage <HolidaysEntry>                sHolidaysStore;
-extern DBCStorage <ItemEntry>                    sItemStore;
+extern DBCStorage <gtSpellScaling>               sGtSpellScalingStore;
+extern DBCStorage <ItemArmorQualityEntry>        sItemArmorQualityStore;
+extern DBCStorage <ItemArmorShieldEntry>         sItemArmorShieldStore;
+extern DBCStorage <ItemArmorTotalEntry>          sItemArmorTotalStore;
 extern DBCStorage <ItemBagFamilyEntry>           sItemBagFamilyStore;
-//extern DBCStorage <ItemDisplayInfoEntry>      sItemDisplayInfoStore; -- not used currently
+extern DBCStorage <ItemDamageEntry>              sItemDamageAmmoStore;
+extern DBCStorage <ItemDamageEntry>              sItemDamageOneHandStore;
+extern DBCStorage <ItemDamageEntry>              sItemDamageOneHandCasterStore;
+extern DBCStorage <ItemDamageEntry>              sItemDamageRangedStore;
+extern DBCStorage <ItemDamageEntry>              sItemDamageThrownStore;
+extern DBCStorage <ItemDamageEntry>              sItemDamageTwoHandStore;
+extern DBCStorage <ItemDamageEntry>              sItemDamageTwoHandCasterStore;
+extern DBCStorage <ItemDamageEntry>              sItemDamageWandStore;
+extern DBCStorage <ItemReforgeEntry>             sItemReforgeStore;
+extern DBCStorage <HolidaysEntry>                sHolidaysStore;
+extern DBCStorage <ItemBagFamilyEntry>           sItemBagFamilyStore;
+//extern DBCStorage <ItemDisplayInfoEntry>       sItemDisplayInfoStore; -- not used currently
 extern DBCStorage <ItemExtendedCostEntry>        sItemExtendedCostStore;
 extern DBCStorage <ItemLimitCategoryEntry>       sItemLimitCategoryStore;
 extern DBCStorage <ItemRandomPropertiesEntry>    sItemRandomPropertiesStore;
@@ -130,6 +145,8 @@ extern DBCStorage <MapEntry>                     sMapStore;
 extern DBCStorage <NumTalentsAtLevelEntry>       sNumTalentsAtLevelStore;
 extern MapDifficultyMap                          sMapDifficultyMap;
 extern DBCStorage <MovieEntry>                   sMovieStore;
+extern DBCStorage <MountCapabilityEntry>         sMountCapabilityStore;
+extern DBCStorage <MountTypeEntry>               sMountTypeStore;
 extern DBCStorage <OverrideSpellDataEntry>       sOverrideSpellDataStore;
 extern DBCStorage <QuestSortEntry>               sQuestSortStore;
 extern DBCStorage <QuestXPEntry>                 sQuestXPStore;
@@ -153,8 +170,8 @@ extern DBCStorage <SpellRangeEntry>              sSpellRangeStore;
 extern DBCStorage <SpellRuneCostEntry>           sSpellRuneCostStore;
 extern DBCStorage <SpellShapeshiftEntry>         sSpellShapeshiftStore;
 extern DBCStorage <SpellEntry>                   sSpellStore;
-extern DBCStorage <StableSlotPricesEntry>        sStableSlotPricesStore;
 extern DBCStorage <SummonPropertiesEntry>        sSummonPropertiesStore;
+extern DBCStorage <GuildPerksEntry>              sGuildPerksStore;
 extern DBCStorage <TalentEntry>                  sTalentStore;
 extern DBCStorage <TalentTabEntry>               sTalentTabStore;
 extern DBCStorage <TaxiNodesEntry>               sTaxiNodesStore;
@@ -166,7 +183,6 @@ extern TaxiMask                                  sAllianceTaxiNodesMask;
 extern TaxiMask                                  sDeathKnightTaxiNodesMask;
 extern TaxiPathSetBySource                       sTaxiPathSetBySource;
 extern TaxiPathNodesByPath                       sTaxiPathNodesByPath;
-extern DBCStorage <TeamContributionPointsEntry>  sTeamContributionPointsStore;
 extern DBCStorage <TotemCategoryEntry>           sTotemCategoryStore;
 extern DBCStorage <VehicleEntry>                 sVehicleStore;
 extern DBCStorage <VehicleSeatEntry>             sVehicleSeatStore;

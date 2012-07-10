@@ -407,7 +407,6 @@ class Spell
 
         void DoCreateItem(uint32 i, uint32 itemtype);
         void WriteSpellGoTargets(WorldPacket* data);
-        void WriteAmmoToPacket(WorldPacket* data);
 
         bool CheckEffectTarget(Unit const* target, uint32 eff) const;
         bool CanAutoCast(Unit* target);

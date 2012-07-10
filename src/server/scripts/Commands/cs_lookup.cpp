@@ -1053,9 +1053,9 @@ public:
 
                 // send title in "id (idx:idx) - [namedlink locale]" format
                 if (handler->GetSession())
-                    handler->PSendSysMessage(LANG_TITLE_LIST_CHAT, id, titleInfo->bit_index, id, titleNameStr, localeNames[locale], knownStr, activeStr);
+                    handler->PSendSysMessage(LANG_TITLE_LIST_CHAT, id, titleInfo->bit_index, id, titleNameStr, localeNames[handler->GetSessionDbLocaleIndex()], knownStr, activeStr);
                 else
-                    handler->PSendSysMessage(LANG_TITLE_LIST_CONSOLE, id, titleInfo->bit_index, titleNameStr, localeNames[locale], knownStr, activeStr);
+                    handler->PSendSysMessage(LANG_TITLE_LIST_CONSOLE, id, titleInfo->bit_index, titleNameStr, localeNames[handler->GetSessionDbLocaleIndex()], knownStr, activeStr);
 
                 ++counter;
             }

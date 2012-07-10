@@ -172,19 +172,23 @@ DBCStorage <SpellEntry> sSpellStore(SpellEntryfmt);
 SpellCategoryStore sSpellCategoryStore;
 PetFamilySpellsStore sPetFamilySpellsStore;
 
-DBCStorage <SpellReagentsEntry> sSpellReagentsStore(SpellReagentsEntryfmt);
-DBCStorage <SpellScalingEntry> sSpellScalingStore(SpellScalingEntryfmt);
-DBCStorage <SpellTotemsEntry> sSpellTotemsStore(SpellTotemsEntryfmt);
-DBCStorage <SpellTargetRestrictionsEntry> sSpellTargetRestrictionsStore(SpellTargetRestrictionsEntryfmt);
-DBCStorage <SpellPowerEntry> sSpellPowerStore(SpellPowerEntryfmt);
-DBCStorage <SpellLevelsEntry> sSpellLevelsStore(SpellLevelsEntryfmt);
-DBCStorage <SpellInterruptsEntry> sSpellInterruptsStore(SpellInterruptsEntryfmt);
-DBCStorage <SpellEquippedItemsEntry> sSpellEquippedItemsStore(SpellEquippedItemsEntryfmt);
-DBCStorage <SpellClassOptionsEntry> sSpellClassOptionsStore(SpellClassOptionsEntryfmt);
-DBCStorage <SpellCooldownsEntry> sSpellCooldownsStore(SpellCooldownsEntryfmt);
-DBCStorage <SpellAuraOptionsEntry> sSpellAuraOptionsStore(SpellAuraOptionsEntryfmt);
-DBCStorage <SpellAuraRestrictionsEntry> sSpellAuraRestrictionsStore(SpellAuraRestrictionsEntryfmt);
-DBCStorage <SpellCastingRequirementsEntry> sSpellCastingRequirementsStore(SpellCastingRequirementsEntryfmt);
+DBCStorage <SpellReagentsEntry> sSpellReagentsStore(SpellReagentsfmt);
+DBCStorage <SpellScalingEntry> sSpellScalingStore(SpellScalingfmt);
+DBCStorage <SpellTotemsEntry> sSpellTotemsStore(SpellTotemsfmt);
+DBCStorage <SpellTargetRestrictionsEntry> sSpellTargetRestrictionsStore(SpellTargetRestrictionsfmt);
+DBCStorage <SpellPowerEntry> sSpellPowerStore(SpellPowerfmt);
+DBCStorage <SpellLevelsEntry> sSpellLevelsStore(SpellLevelsfmt);
+DBCStorage <SpellInterruptsEntry> sSpellInterruptsStore(SpellInterruptsfmt);
+DBCStorage <SpellEquippedItemsEntry> sSpellEquippedItemsStore(SpellEquippedItemsfmt);
+DBCStorage <SpellClassOptionsEntry> sSpellClassOptionsStore(SpellClassOptionsfmt);
+DBCStorage <SpellCooldownsEntry> sSpellCooldownsStore(SpellCooldownsfmt);
+DBCStorage <SpellAuraOptionsEntry> sSpellAuraOptionsStore(SpellAuraOptionsfmt);
+DBCStorage <SpellAuraRestrictionsEntry> sSpellAuraRestrictionsStore(SpellAuraRestrictionsfmt);
+DBCStorage <SpellCastingRequirementsEntry> sSpellCastingRequirementsStore(SpellCastingRequirementsfmt);
+
+SpellEffectMap sSpellEffectMap;
+SpellReagentMap sSpellReagentMap;
+SpellTotemMap sSpellTotemMap;
 
 DBCStorage <SpellCastTimesEntry> sSpellCastTimesStore(SpellCastTimefmt);
 DBCStorage <SpellDifficultyEntry> sSpellDifficultyStore(SpellDifficultyfmt);
@@ -459,6 +463,11 @@ void LoadDBCStores(const std::string& dataPath)
 
     LoadDBC(availableDbcLocales, bad_dbc_files, sSpellCategoriesStore,        dbcPath,"SpellCategories.dbc");
     LoadDBC(availableDbcLocales, bad_dbc_files, sSpellEffectStore,            dbcPath,"SpellEffect.dbc");
+    for(uint32 i = 1; i < sSpellEffectStore.GetNumRows(); ++i)
+    {
+        if(SpellEffectEntry const *spellEffect = sSpellEffectStore.LookupEntry(i))
+            sSpellEffectMap[spellEffect->EffectSpellId].effects[spellEffect->EffectIndex] = spellEffect;
+    }
     LoadDBC(availableDbcLocales, bad_dbc_files, sSpellCastTimesStore,         dbcPath, "SpellCastTimes.dbc");
     LoadDBC(availableDbcLocales, bad_dbc_files, sSpellDifficultyStore,        dbcPath, "SpellDifficulty.dbc", &CustomSpellDifficultyfmt, &CustomSpellDifficultyIndex);
     LoadDBC(availableDbcLocales, bad_dbc_files, sSpellDurationStore,          dbcPath, "SpellDuration.dbc");
@@ -631,6 +640,33 @@ char* GetPetName(uint32 petfamily)
     if (!pet_family)
         return NULL;
     return pet_family->Name;
+}
+
+SpellEffectEntry const* GetSpellEffectEntry(uint32 spellId, uint32 effect)
+{
+    SpellEffectMap::const_iterator itr = sSpellEffectMap.find(spellId);
+    if(itr == sSpellEffectMap.end())
+        return NULL;
+
+    return itr->second.effects[effect];
+}
+
+SpellReagentsEntry const* GetSpellReagentEntry(uint32 spellId, uint8 reagent)
+{
+    SpellReagentMap::const_iterator itr = sSpellReagentMap.find(spellId);
+    if(itr == sSpellReagentMap.end())
+        return NULL;
+
+    return itr->second.reagents[reagent];
+}
+
+SpellTotemsEntry const* GetSpellTotemEntry(uint32 spellId, uint8 totem)
+{
+    SpellTotemMap::const_iterator itr = sSpellTotemMap.find(spellId);
+    if(itr == sSpellTotemMap.end())
+        return NULL;
+
+    return itr->second.totems[totem];
 }
 
 TalentSpellPos const* GetTalentSpellPos(uint32 spellId)

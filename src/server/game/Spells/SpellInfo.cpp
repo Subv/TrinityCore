@@ -332,7 +332,7 @@ SpellEffectInfo::SpellEffectInfo(SpellEntry const* spellEntry, SpellInfo const* 
     PointsPerComboPoint = _effect ? _effect->EffectPointsPerComboPoint : 0.0f;
     ValueMultiplier = _effect ? _effect->EffectValueMultiplier : 0.0f;
     DamageMultiplier = _effect ? _effect->EffectDamageMultiplier : 0.0f;
-    BonusMultiplier = _effect ? _effect->EffectBonusMultiplier : 0.0f;
+    BonusMultiplier = _effect ? _effect->EffectBonusCoefficient : 0.0f;
     MiscValue = _effect ? _effect->EffectMiscValue : 0;
     MiscValueB = _effect ? _effect->EffectMiscValueB : 0;
     Mechanic = Mechanics(_effect ? _effect->EffectMechanic : 0);
@@ -499,7 +499,7 @@ float SpellEffectInfo::CalcRadius(Unit* caster, Spell* spell) const
     if (!HasRadius())
         return 0.0f;
 
-    float radius = RadiusEntry->radiusMax;
+    float radius = RadiusEntry->radiusFriend;
     if (Player* modOwner = (caster ? caster->GetSpellModOwner() : NULL))
         modOwner->ApplySpellMod(_spellInfo->Id, SPELLMOD_RADIUS, radius, spell);
 
@@ -738,7 +738,6 @@ SpellInfo::SpellInfo(SpellEntry const* spellEntry)
     SpellIconID = spellEntry->SpellIconID;
     ActiveIconID = spellEntry->activeIconID;
     SpellName = spellEntry->SpellName;
-    Rank = spellEntry->Rank;
     SchoolMask = spellEntry->SchoolMask;
     RuneCostID = spellEntry->runeCostID;
     SpellDifficultyId = spellEntry->SpellDifficultyId;
@@ -1331,10 +1330,10 @@ SpellCastResult SpellInfo::CheckShapeshift(uint32 form) const
         return SPELL_CAST_OK;
 
     bool actAsShifted = false;
-    SpellShapeshiftEntry const* shapeInfo = NULL;
+    SpellShapeshiftFormEntry const* shapeInfo = NULL;
     if (form > 0)
     {
-        shapeInfo = sSpellShapeshiftStore.LookupEntry(form);
+        shapeInfo = sSpellShapeshiftFormStore.LookupEntry(form);
         if (!shapeInfo)
         {
             sLog->outError("GetErrorAtShapeshiftedCast: unknown shapeshift %u", form);

@@ -1804,19 +1804,37 @@ struct SpellReagentsEntry
     uint32 ReagentCount[8];                              // 9-16     m_reagentCount
 };
 
+struct SpellReagent
+{
+    SpellReagent()
+    {
+        reagents[0] = NULL;
+        reagents[1] = NULL;
+        reagents[2] = NULL;
+        reagents[3] = NULL;
+        reagents[4] = NULL;
+        reagents[5] = NULL;
+        reagents[6] = NULL;
+        reagents[7] = NULL;
+    }
+    SpellReagentsEntry const* reagents[MAX_SPELL_REAGENTS];
+};
+
+typedef std::map<uint32, SpellReagent> SpellReagentMap;
+
 // SpellScaling.dbc
 struct SpellScalingEntry
 {
-    uint32 Id;                                          // 0
-    int32 ct_min;                                       // 1        minimum cast time
-    int32 ct_max;                                       // 2        maximum cast time
-    uint32 ct_max_level;                                // 3        first level with maximum cast time
-    int32 class_;                                       // 4        Caster's class. Can be a negative value : MAX_CLASSES + 1 - class_.
-    float coefMultiplier[3];                            // 5-7
-    float coefRandomMultiplier[3];                      // 8-10
-    float coefOther[3];                                 // 11-13
-    float base_coef;                                    // 14
-    uint32 base_level_coef;                             // 15       under this level, the final base coef will be < 1.
+    uint32    Id;                                           // 0        m_ID
+    int32     castTimeMin;                                  // 1
+    int32     castTimeMax;                                  // 2
+    uint32    castScalingMaxLevel;                          // 3
+    uint32    playerClass;                                  // 4        (index * 100) + charLevel => gtSpellScaling.dbc
+    float     Multiplier[3];                                // 5-7
+    float     RandomMultiplier[3];                          // 8-10
+    float     OtherMultiplier[3];                           // 11-13
+    float     CoefBase;                                     // 14        some coefficient, mostly 1.0f
+    uint32    CoefLevelBase;                                // 15        some level
 };
 
 // SpellShapeshift.dbc
@@ -1840,13 +1858,27 @@ struct SpellTargetRestrictionsEntry
     uint32 Targets;                                      // 4        m_targets
 };
 
+#define MAX_SPELL_TOTEMS            2
+
 // SpellTotems.dbc
 struct SpellTotemsEntry
 {
-    uint32 Id;                                           // 0        m_ID
-    uint32 TotemCategory[2];                             // 1-2      m_requiredTotemCategoryID
-    uint32 Totem[2];                                     // 3-4      m_totem
+    uint32 Id;                                                          // 0        m_ID
+    uint32 TotemCategory[MAX_SPELL_TOTEMS];                             // 1-2      m_requiredTotemCategoryID
+    uint32 Totem[MAX_SPELL_TOTEMS];                                     // 3-4      m_totem
 };
+
+struct SpellTotem
+{
+    SpellTotem()
+    {
+        totems[0] = NULL;
+        totems[1] = NULL;
+    }
+    SpellTotemsEntry const* totems[MAX_SPELL_TOTEMS];
+};
+
+typedef std::map<uint32, SpellTotem> SpellTotemMap;
 
 struct SpellEntry
 {
@@ -2335,6 +2367,19 @@ struct TalentSpellPos
 };
 
 typedef std::map<uint32, TalentSpellPos> TalentSpellPosMap;
+
+struct SpellEffect
+{
+    SpellEffect()
+    {
+        effects[0] = NULL;
+        effects[1] = NULL;
+        effects[2] = NULL;
+    }
+    SpellEffectEntry const* effects[3];
+};
+
+typedef std::map<uint32, SpellEffect> SpellEffectMap;
 
 struct TaxiPathBySourceAndDestination
 {

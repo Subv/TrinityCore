@@ -28,8 +28,8 @@
 
 void WorldSession::HandleLearnTalentOpcode(WorldPacket & recv_data)
 {
-    uint32 talent_id, requested_rank;
-    recv_data >> talent_id >> requested_rank;
+    uint32 talentId, requestedRank;
+    recv_data >> talentId >> requestedRank;
 
     if (_player->LearnTalent(talentId, requestedRank))
         _player->SendTalentsInfoData(false);

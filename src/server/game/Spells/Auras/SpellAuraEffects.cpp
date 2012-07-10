@@ -1458,7 +1458,7 @@ void AuraEffect::HandleShapeshiftBoosts(Unit* target, bool apply) const
             // Also do it for Glyphs
             for (uint32 i = 0; i < MAX_GLYPH_SLOT_INDEX; ++i)
             {
-                if (uint32 glyphId = target->ToPlayer()->GetGlyph(i))
+                if (uint32 glyphId = target->ToPlayer()->GetGlyph(target->ToPlayer()->GetActiveSpec(), i))
                 {
                     if (GlyphPropertiesEntry const* glyph = sGlyphPropertiesStore.LookupEntry(glyphId))
                     {
@@ -2120,12 +2120,8 @@ void AuraEffect::HandleAuraModShapeshift(AuraApplication const* aurApp, uint8 mo
         // If druid shifts while being disarmed we need to deal with that since forms aren't affected by disarm
         // and also HandleAuraModDisarm is not triggered
         if (!target->CanUseAttackType(BASE_ATTACK))
-        {
             if (Item* pItem = target->ToPlayer()->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND))
-            {
                 target->ToPlayer()->_ApplyWeaponDamage(EQUIPMENT_SLOT_MAINHAND, pItem->GetTemplate(), NULL, apply);
-            }
-        }
     }
 
     // stop handling the effect if it was removed by linked event
@@ -2134,7 +2130,7 @@ void AuraEffect::HandleAuraModShapeshift(AuraApplication const* aurApp, uint8 mo
 
     if (target->GetTypeId() == TYPEID_PLAYER)
     {
-        SpellShapeshiftEntry const* shapeInfo = sSpellShapeshiftStore.LookupEntry(form);
+        SpellShapeshiftFormEntry const* shapeInfo = sSpellShapeshiftFormStore.LookupEntry(form);
         // Learn spells for shapeshift form - no need to send action bars or add spells to spellbook
         for (uint8 i = 0; i<MAX_SHAPESHIFT_SPELLS; ++i)
         {
@@ -4974,9 +4970,6 @@ void AuraEffect::HandleAuraDummy(AuraApplication const* aurApp, uint8 mode, bool
                     if (caster)
                         target->GetMotionMaster()->MoveFall();
                     break;
-                case 46699:                                     // Requires No Ammo
-                    if (target->GetTypeId() == TYPEID_PLAYER)
-                        target->ToPlayer()->RemoveAmmo();      // not use ammo and not allow use
                     break;
                 case 52916: // Honor Among Thieves
                     if (target->GetTypeId() == TYPEID_PLAYER)
@@ -6472,7 +6465,7 @@ void AuraEffect::HandlePeriodicHealAurasTick(Unit* target, Unit* caster) const
     // damage caster for heal amount
     if (target != caster && GetSpellInfo()->AttributesEx2 & SPELL_ATTR2_HEALTH_FUNNEL)
     {
-        uint32 funnelDamage = GetSpellInfo()->ManaPerSecond; // damage is not affected by spell power
+        uint32 funnelDamage = GetSpellInfo()->Effects[EFFECT_0].CalcValue(); // damage is not affected by spell power
         if ((int32)funnelDamage > gain)
             funnelDamage = gain;
         uint32 funnelAbsorb = 0;

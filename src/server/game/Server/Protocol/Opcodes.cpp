@@ -872,7 +872,7 @@ void InitOpcodeTable()
     // OPCODE( CMSG_SET_LFG_COMMENT,                         STATUS_LOGGEDIN, PROCESS_THREADUNSAFE,  &WorldSession::HandleLfgSetCommentOpcode       );
     // OPCODE( SMSG_LFG_UPDATE_PLAYER,                       STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
     // OPCODE( SMSG_LFG_UPDATE_PARTY,                        STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
-    // OPCODE( SMSG_LFG_UPDATE_LIST,                         STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
+    // OPCODE( SMSG_LFG_UPDATE_SEARCH,                       STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
     // OPCODE( CMSG_LFG_SET_ROLES,                           STATUS_LOGGEDIN, PROCESS_THREADUNSAFE,  &WorldSession::HandleLfgSetRolesOpcode         );
     // OPCODE( CMSG_LFG_SET_NEEDS,                           STATUS_LOGGEDIN, PROCESS_THREADUNSAFE,  &WorldSession::Handle_NULL                     );
     // OPCODE( CMSG_LFG_SET_BOOT_VOTE,                       STATUS_LOGGEDIN, PROCESS_THREADUNSAFE,  &WorldSession::HandleLfgSetBootVoteOpcode      );
@@ -1227,7 +1227,7 @@ void InitOpcodeTable()
     // OPCODE( CMSG_MOVE_GRAVITY_DISABLE_ACK,                STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_NULL                     );
     // OPCODE( SMSG_MOVE_GRAVITY_ENABLE,                     STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
     // OPCODE( CMSG_MOVE_GRAVITY_ENABLE_ACK,                 STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_NULL                     );
-    // OPCODE( SMSG_MOVE_LEVITATING,                         STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
+    // OPCODE( MSG_MOVE_GRAVITY_CHNG,                        STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
     // OPCODE( SMSG_SPLINE_MOVE_GRAVITY_DISABLE,             STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
     // OPCODE( SMSG_SPLINE_MOVE_GRAVITY_ENABLE,              STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
     // OPCODE( CMSG_EQUIPMENT_SET_USE,                       STATUS_LOGGEDIN, PROCESS_THREADUNSAFE,  &WorldSession::HandleEquipmentSetUse           );
@@ -1261,7 +1261,7 @@ void InitOpcodeTable()
     // OPCODE( CMSG_QUERY_QUESTS_COMPLETED,                  STATUS_LOGGEDIN, PROCESS_THREADUNSAFE,  &WorldSession::HandleQueryQuestsCompleted      );
     // OPCODE( SMSG_QUERY_QUESTS_COMPLETED_RESPONSE,         STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
     // OPCODE( CMSG_GM_REPORT_LAG,                           STATUS_LOGGEDIN, PROCESS_THREADUNSAFE,  &WorldSession::HandleReportLag                 );
-    // OPCODE( SMSG_CORPSE_NOT_IN_INSTANCE,                  STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
+    // OPCODE( SMSG_AREA_TRIGGER_NO_CORPSE,                  STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
     // OPCODE( CMSG_SET_ALLOW_LOW_LEVEL_RAID1,               STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_NULL                     );
     // OPCODE( CMSG_SET_ALLOW_LOW_LEVEL_RAID2,               STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_NULL                     );
     // OPCODE( SMSG_CAMERA_SHAKE,                            STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
@@ -1274,9 +1274,9 @@ void InitOpcodeTable()
     // OPCODE( CMSG_REDIRECTION_AUTH_PROOF,                  STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_NULL                     );
     // OPCODE( SMSG_COMBAT_LOG_MULTIPLE,                     STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
     // OPCODE( SMSG_LFG_OPEN_FROM_GOSSIP,                    STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
-    // OPCODE( SMSG_UNKNOWN_1302,                            STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
-    // OPCODE( CMSG_UNKNOWN_1303,                            STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_NULL                     );
-    // OPCODE( SMSG_UNKNOWN_1304,                            STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
+    // OPCODE( SMSG_MOVE_SET_COLLISION_HGT,                  STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
+    // OPCODE( CMSG_MOVE_SET_COLLISION_HGT_ACK,              STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_NULL                     );
+    // OPCODE( MSG_MOVE_SET_COLLISION_HGT,                   STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
     // OPCODE( SMSG_SEND_QUEUED_PACKETS,                     STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
     // OPCODE( CMSG_REDIRECT_AUTH_PROOF,                     STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_NULL                     );
     // OPCODE( CMSG_AUTO_DECLINE_GUILD_INVITES,              STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_NULL                     );

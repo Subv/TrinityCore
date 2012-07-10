@@ -517,11 +517,6 @@ void Player::CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, bo
         weapon_mindamage = BASE_MINDAMAGE;
         weapon_maxdamage = BASE_MAXDAMAGE;
     }
-    else if (attType == RANGED_ATTACK)                       //add ammo DPS to ranged damage
-    {
-        weapon_mindamage += GetAmmoDPS() * att_speed;
-        weapon_maxdamage += GetAmmoDPS() * att_speed;
-    }
 
     min_damage = ((base_value + weapon_mindamage) * base_pct + total_value) * total_pct;
     max_damage = ((base_value + weapon_maxdamage) * base_pct + total_value) * total_pct;
@@ -965,26 +960,33 @@ void Creature::UpdateMaxPower(Powers power)
 
 void Creature::UpdateAttackPowerAndDamage(bool ranged)
 {
-    UnitMods unitMod = ranged ? UNIT_MOD_ATTACK_POWER_RANGED : UNIT_MOD_ATTACK_POWER;
+    UnitMods unitMod_pos = ranged ? UNIT_MOD_ATTACK_POWER_RANGED_POS : UNIT_MOD_ATTACK_POWER_POS;
+    UnitMods unitMod_neg = ranged ? UNIT_MOD_ATTACK_POWER_RANGED_NEG : UNIT_MOD_ATTACK_POWER_NEG;
 
     uint16 index = UNIT_FIELD_ATTACK_POWER;
-    uint16 index_mod = UNIT_FIELD_ATTACK_POWER_MODS;
     uint16 index_mult = UNIT_FIELD_ATTACK_POWER_MULTIPLIER;
+    
+    uint16 index_mod_pos = UNIT_FIELD_ATTACK_POWER_MOD_POS;
+    uint16 index_mod_neg = UNIT_FIELD_ATTACK_POWER_MOD_NEG;
 
     if (ranged)
     {
         index = UNIT_FIELD_RANGED_ATTACK_POWER;
-        index_mod = UNIT_FIELD_RANGED_ATTACK_POWER_MODS;
         index_mult = UNIT_FIELD_RANGED_ATTACK_POWER_MULTIPLIER;
+       
+        index_mod_pos = UNIT_FIELD_RANGED_ATTACK_POWER_MOD_POS;
+        index_mod_neg = UNIT_FIELD_RANGED_ATTACK_POWER_MOD_NEG;
     }
 
-    float base_attPower  = GetModifierValue(unitMod, BASE_VALUE) * GetModifierValue(unitMod, BASE_PCT);
-    float attPowerMod = GetModifierValue(unitMod, TOTAL_VALUE);
-    float attPowerMultiplier = GetModifierValue(unitMod, TOTAL_PCT) - 1.0f;
-
-    SetInt32Value(index, (uint32)base_attPower);            //UNIT_FIELD_(RANGED)_ATTACK_POWER field
-    SetInt32Value(index_mod, (uint32)attPowerMod);          //UNIT_FIELD_(RANGED)_ATTACK_POWER_MODS field
-    SetFloatValue(index_mult, attPowerMultiplier);          //UNIT_FIELD_(RANGED)_ATTACK_POWER_MULTIPLIER field
+    float base_attPower  = (GetModifierValue(unitMod_pos, BASE_VALUE) - GetModifierValue(unitMod_neg, BASE_VALUE)) * (GetModifierValue(unitMod_pos, BASE_PCT) + (1 - GetModifierValue(unitMod_neg, BASE_PCT)));
+    float attPowerMod_pos = GetModifierValue(unitMod_pos, TOTAL_VALUE);
+    float attPowerMod_neg = GetModifierValue(unitMod_neg, TOTAL_VALUE);
+    float attPowerMultiplier = (GetModifierValue(unitMod_pos, TOTAL_PCT) + (1 - GetModifierValue(unitMod_neg, TOTAL_PCT)))- 1.0f;
+    
+    SetInt32Value(index, (uint32)base_attPower);                    //UNIT_FIELD_(RANGED)_ATTACK_POWER field
+    SetInt32Value(index_mod_pos, (uint32)attPowerMod_pos);          //UNIT_FIELD_(RANGED)_ATTACK_POWER_MOD_POS field
+    SetInt32Value(index_mod_neg, (uint32)attPowerMod_neg);          //UNIT_FIELD_(RANGED)_ATTACK_POWER_MOD_NEG field
+    SetFloatValue(index_mult, attPowerMultiplier);                  //UNIT_FIELD_(RANGED)_ATTACK_POWER_MULTIPLIER field
 
     //automatically update weapon damage after attack power modification
     if (ranged)
@@ -1065,6 +1067,7 @@ void Creature::UpdateDamagePhysical(WeaponAttackType attType)
 #define ENTRY_FELHUNTER         417
 #define ENTRY_FELGUARD          17252
 #define ENTRY_WATER_ELEMENTAL   510
+#define ENTRY_INFERNAL          89
 #define ENTRY_TREANT            1964
 #define ENTRY_FIRE_ELEMENTAL    15438
 #define ENTRY_GHOUL             26125
@@ -1274,8 +1277,6 @@ void Guardian::UpdateAttackPowerAndDamage(bool ranged)
 
     float val = 0.0f;
     float bonusAP = 0.0f;
-    UnitMods unitMod = UNIT_MOD_ATTACK_POWER;
-
     if (GetEntry() == ENTRY_IMP)                                   // imp's attack power
         val = GetStat(STAT_STRENGTH) - 10.0f;
     else
@@ -1301,7 +1302,7 @@ void Guardian::UpdateAttackPowerAndDamage(bool ranged)
             }
 
             bonusAP = owner->GetTotalAttackPowerValue(RANGED_ATTACK) * 0.22f * mod;
-            SetBonusDamage(int32(owner->GetTotalAttackPowerValue(RANGED_ATTACK) * 0.1287f * mod));
+            SetBonusDamage(int32(owner->GetTotalAttackPowerValue(RANGED_ATTACK) * 0.425f * mod));
         }
         else if (IsPetGhoul()) //ghouls benefit from deathknight's attack power (may be summon pet or not)
         {
@@ -1327,22 +1328,38 @@ void Guardian::UpdateAttackPowerAndDamage(bool ranged)
                 frost = 0;
             SetBonusDamage(int32(frost * 0.4f));
         }
+        else if (GetEntry() == ENTRY_INFERNAL)
+        {
+            int32 fire  = int32(owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_FIRE)) - owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_NEG + SPELL_SCHOOL_FIRE);
+            if (fire < 0)
+                fire = 0;
+            SetBonusDamage(int32(fire * 0.15f));
+            bonusAP = fire * 0.57f;
+        }
     }
 
-    SetModifierValue(UNIT_MOD_ATTACK_POWER, BASE_VALUE, val + bonusAP);
+    if (bonusAP > 0)
+        SetModifierValue(UNIT_MOD_ATTACK_POWER_POS, BASE_VALUE, val + bonusAP);
+    else
+    {
+        SetModifierValue(UNIT_MOD_ATTACK_POWER_POS, BASE_VALUE, val);
+        SetModifierValue(UNIT_MOD_ATTACK_POWER_NEG, BASE_VALUE, -bonusAP);
+    }
 
     //in BASE_VALUE of UNIT_MOD_ATTACK_POWER for creatures we store data of meleeattackpower field in DB
-    float base_attPower  = GetModifierValue(unitMod, BASE_VALUE) * GetModifierValue(unitMod, BASE_PCT);
-    float attPowerMod = GetModifierValue(unitMod, TOTAL_VALUE);
-    float attPowerMultiplier = GetModifierValue(unitMod, TOTAL_PCT) - 1.0f;
+    float base_attPower  = (GetModifierValue(UNIT_MOD_ATTACK_POWER_POS, BASE_VALUE) - GetModifierValue(UNIT_MOD_ATTACK_POWER_NEG, BASE_VALUE)) * (GetModifierValue(UNIT_MOD_ATTACK_POWER_POS, BASE_PCT) + (1 - GetModifierValue(UNIT_MOD_ATTACK_POWER_NEG, BASE_PCT)));
+    float attPowerMod_pos = GetModifierValue(UNIT_MOD_ATTACK_POWER_POS, TOTAL_VALUE);
+    float attPowerMod_neg = GetModifierValue(UNIT_MOD_ATTACK_POWER_NEG, TOTAL_VALUE);
+    float attPowerMultiplier = (GetModifierValue(UNIT_MOD_ATTACK_POWER_POS, TOTAL_PCT) + (1 - GetModifierValue(UNIT_MOD_ATTACK_POWER_NEG, TOTAL_PCT))) - 1.0f;
 
     //UNIT_FIELD_(RANGED)_ATTACK_POWER field
     SetInt32Value(UNIT_FIELD_ATTACK_POWER, (int32)base_attPower);
     //UNIT_FIELD_(RANGED)_ATTACK_POWER_MODS field
-    SetInt32Value(UNIT_FIELD_ATTACK_POWER_MODS, (int32)attPowerMod);
+    SetInt32Value(UNIT_FIELD_ATTACK_POWER_MOD_POS, (int32)attPowerMod_pos);
+    SetInt32Value(UNIT_FIELD_ATTACK_POWER_MOD_NEG, (int32)attPowerMod_neg);
     //UNIT_FIELD_(RANGED)_ATTACK_POWER_MULTIPLIER field
     SetFloatValue(UNIT_FIELD_ATTACK_POWER_MULTIPLIER, attPowerMultiplier);
-
+    
     //automatically update weapon damage after attack power modification
     UpdateDamagePhysical(BASE_ATTACK);
 }

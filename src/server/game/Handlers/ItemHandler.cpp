@@ -280,7 +280,8 @@ void WorldSession::HandleDestroyItemOpcode(WorldPacket & recv_data)
 // Only _static_ data send in this packet !!!
 void WorldSession::HandleItemQuerySingleOpcode(WorldPacket & recv_data)
 {
-    //sLog->outDebug(LOG_FILTER_PACKETIO, "WORLD: CMSG_ITEM_QUERY_SINGLE");
+    // ToDo: Cataclysm system
+    /*//sLog->outDebug(LOG_FILTER_PACKETIO, "WORLD: CMSG_ITEM_QUERY_SINGLE");
     uint32 item;
     recv_data >> item;
 
@@ -302,7 +303,7 @@ void WorldSession::HandleItemQuerySingleOpcode(WorldPacket & recv_data)
             }
         }
                                                             // guess size
-        WorldPacket data(SMSG_ITEM_QUERY_SINGLE_RESPONSE, 600);
+        WorldPacket data(SMSG_DB_REPLY, 600);
         data << pProto->ItemId;
         data << pProto->Class;
         data << pProto->SubClass;
@@ -428,10 +429,10 @@ void WorldSession::HandleItemQuerySingleOpcode(WorldPacket & recv_data)
     else
     {
         sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: CMSG_ITEM_QUERY_SINGLE - NO item INFO! (ENTRY: %u)", item);
-        WorldPacket data(SMSG_ITEM_QUERY_SINGLE_RESPONSE, 4);
+        WorldPacket data(SMSG_DB_REPLY, 4);
         data << uint32(item | 0x80000000);
         SendPacket(&data);
-    }
+    }*/
 }
 
 void WorldSession::HandleReadItem(WorldPacket & recv_data)
@@ -978,25 +979,6 @@ void WorldSession::HandleAutoStoreBankItemOpcode(WorldPacket& recvPacket)
         _player->RemoveItem(srcbag, srcslot, true);
         _player->BankItem(dest, pItem, true);
     }
-}
-
-void WorldSession::HandleSetAmmoOpcode(WorldPacket & recv_data)
-{
-    if (!GetPlayer()->isAlive())
-    {
-        GetPlayer()->SendEquipError(EQUIP_ERR_YOU_ARE_DEAD, NULL, NULL);
-        return;
-    }
-
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: CMSG_SET_AMMO");
-    uint32 item;
-
-    recv_data >> item;
-
-    if (!item)
-        GetPlayer()->RemoveAmmo();
-    else
-        GetPlayer()->SetAmmo(item);
 }
 
 void WorldSession::SendEnchantmentLog(uint64 Target, uint64 Caster, uint32 ItemID, uint32 SpellID)

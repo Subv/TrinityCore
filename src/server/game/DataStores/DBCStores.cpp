@@ -112,6 +112,8 @@ DBCStorage <ItemArmorQualityEntry>        sItemArmorQualityStore(ItemArmorQualit
 DBCStorage <ItemArmorShieldEntry>         sItemArmorShieldStore(ItemArmorShieldfmt);
 DBCStorage <ItemArmorTotalEntry>          sItemArmorTotalStore(ItemArmorTotalfmt);
 DBCStorage <ItemBagFamilyEntry>           sItemBagFamilyStore(ItemBagFamilyfmt);
+DBCStorage <ItemDisenchantLootEntry>      sItemDisenchantLootStore(ItemDisenchantLootfmt);
+DBCStorage <ArmorLocationEntry>           sArmorLocationStore(ArmorLocationfmt);
 DBCStorage <ItemDamageEntry>              sItemDamageAmmoStore(ItemDamagefmt);
 DBCStorage <ItemDamageEntry>              sItemDamageOneHandStore(ItemDamagefmt);
 DBCStorage <ItemDamageEntry>              sItemDamageOneHandCasterStore(ItemDamagefmt);
@@ -397,6 +399,8 @@ void LoadDBCStores(const std::string& dataPath)
     LoadDBC(availableDbcLocales, bad_dbc_files, sItemRandomSuffixStore,       dbcPath, "ItemRandomSuffix.dbc");
     LoadDBC(availableDbcLocales, bad_dbc_files, sItemSetStore,                dbcPath, "ItemSet.dbc");
 
+    LoadDBC(availableDbcLocales, bad_dbc_files, sArmorLocationStore,        dbcPath, "ArmorLocation.dbc");
+    LoadDBC(availableDbcLocales, bad_dbc_files, sItemDisenchantLootStore,    dbcPath, "ItemDisenchantLoot.dbc");
     LoadDBC(availableDbcLocales, bad_dbc_files, sItemArmorQualityStore,    dbcPath, "ItemArmorQuality.dbc");
     LoadDBC(availableDbcLocales, bad_dbc_files, sItemArmorShieldStore,     dbcPath, "ItemArmorShield.dbc");
     LoadDBC(availableDbcLocales, bad_dbc_files, sItemArmorTotalStore,      dbcPath, "ItemArmorTotal.dbc");

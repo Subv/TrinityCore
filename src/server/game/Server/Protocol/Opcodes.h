@@ -885,7 +885,7 @@ enum Opcodes
     CMSG_SET_LFG_COMMENT                             = 0x0E1C4, // 4.0.6a 13623
     SMSG_LFG_UPDATE_PLAYER                           = 0x0E284, // 4.0.6a 13623
     SMSG_LFG_UPDATE_PARTY                            = 0x02CE8, // 4.0.6a 13623
-    SMSG_LFG_UPDATE_LIST                             = 0x03880, // 4.0.6a 13623
+    SMSG_LFG_UPDATE_SEARCH                           = 0x03880, // 4.0.6a 13623
     CMSG_LFG_SET_ROLES                               = 0x0E8CC, // 4.0.6a 13623
     CMSG_LFG_SET_NEEDS                               = 0x10145, // Unknown opcode ID
     CMSG_LFG_SET_BOOT_VOTE                           = 0x0D65D, // Unknown opcode ID
@@ -1241,7 +1241,7 @@ enum Opcodes
     CMSG_MOVE_GRAVITY_DISABLE_ACK                    = 0x0F0C0, // 4.0.6a 13623
     SMSG_MOVE_GRAVITY_ENABLE                         = 0x1021B, // Unknown opcode ID
     CMSG_MOVE_GRAVITY_ENABLE_ACK                     = 0x07DE8, // 4.0.6a 13623
-    SMSG_MOVE_LEVITATING                             = 0x0B8AC, // 4.0.6a 13623
+    MSG_MOVE_GRAVITY_CHNG                            = 0x0B8AC, // 4.0.6a 13623
     SMSG_SPLINE_MOVE_GRAVITY_DISABLE                 = 0x1021E, // Unknown opcode ID
     SMSG_SPLINE_MOVE_GRAVITY_ENABLE                  = 0x1022F, // 4.0.6a 13623
     CMSG_EQUIPMENT_SET_USE                           = 0x0E8A0, // 4.0.6a 13623
@@ -1278,7 +1278,7 @@ enum Opcodes
     CMSG_QUERY_QUESTS_COMPLETED                      = 0x0ECE8, // 4.0.6a 13623
     SMSG_QUERY_QUESTS_COMPLETED_RESPONSE             = 0x0F1E8, // 4.0.6a 13623
     CMSG_GM_REPORT_LAG                               = 0x03FA0, // 4.0.6a 13623
-    SMSG_CORPSE_NOT_IN_INSTANCE                      = 0x031E4, // 4.0.6a 13623
+    SMSG_AREA_TRIGGER_NO_CORPSE                      = 0x031E4, // 4.0.6a 13623
     CMSG_SET_ALLOW_LOW_LEVEL_RAID1                   = 0x035EC, // 4.0.6a 13623
     CMSG_SET_ALLOW_LOW_LEVEL_RAID2                   = 0x029C4, // 4.0.6a 13623
     SMSG_CAMERA_SHAKE                                = 0x0A2E4, // 4.0.6a 13623
@@ -1332,13 +1332,13 @@ enum Opcodes
     CMSG_GUILD_NEWS_SET_STICKY                       = 0x0252D, // 4.0.6a 13623
     SMSG_GUILD_CRITERIA_DELETED                      = 0x0000C, // 4.0.6a 13623
     SMSG_GUILD_CRITERIA_DATA                         = 0x0400E, // 4.0.6a 13623
-    CMSG_RETURN_TO_GRAVEYARD                         = 0x00593, // 4.0.6a 13623
+    CMSG_PORT_GRAVEYARD                              = 0x00593, // 4.0.6a 13623
     SMSG_UNKNOWN_1276                                = 0x1023A, // 4.0.6a 13623
     SMSG_UNKNOWN_1240                                = 0x0B8E0, // 4.0.6a 13623
     SMSG_UNKNOWN_1308                                = 0x10011, // Unknown opcode Name, ID
-    SMSG_UNKNOWN_1302                                = 0x10010, // Unknown opcode Name, ID
-    CMSG_UNKNOWN_1303                                = 0x06BE0, // 4.0.6a 13623
-    SMSG_UNKNOWN_1304                                = 0x072E0, // 4.0.6a 13623
+    SMSG_MOVE_SET_COLLISION_HGT                      = 0x10010, // Unknown opcode Name, ID
+    CMSG_MOVE_SET_COLLISION_HGT_ACK                  = 0x06BE0, // 4.0.6a 13623
+    MSG_MOVE_SET_COLLISION_HGT                       = 0x072E0, // 4.0.6a 13623
     SMSG_UNKNOWN_1310                                = 0x02E88, // 4.0.6a 13623
     SMSG_UNKNOWN_1311                                = 0x01E76, // Unknown opcode ID/Name
     SMSG_UNKNOWN_1312                                = 0x04D56, // Unknown opcode ID/Name

@@ -270,6 +270,8 @@ void WorldSession::HandleBattlegroundPlayerPositionsOpcode(WorldPacket & /*recv_
             ++count;
     }
 
+    // TODO: Cataclysm system
+    /*
     WorldPacket data(MSG_BATTLEGROUND_PLAYER_POSITIONS, 4 + 4 + 16 * count);
     data << 0;
     data << count;
@@ -286,8 +288,9 @@ void WorldSession::HandleBattlegroundPlayerPositionsOpcode(WorldPacket & /*recv_
         data << float(hplr->GetPositionX());
         data << float(hplr->GetPositionY());
     }
+    
 
-    SendPacket(&data);
+    SendPacket(&data);*/
 }
 
 void WorldSession::HandlePVPLogDataOpcode(WorldPacket & /*recv_data*/)

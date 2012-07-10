@@ -859,7 +859,7 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
     {
         mutetime = time(NULL) + llabs(mutetime);
 
-        PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_UPD_MUTE_TIME);
+        stmt = LoginDatabase.GetPreparedStatement(LOGIN_UPD_MUTE_TIME);
         stmt->setInt64(0, mutetime);
         stmt->setUInt32(1, id);
         LoginDatabase.Execute(stmt);
@@ -955,7 +955,7 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
         isRecruiter = true;
 
     // Update the last_ip in the database
-    PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_UPD_LAST_IP);
+    stmt = LoginDatabase.GetPreparedStatement(LOGIN_UPD_LAST_IP);
 
     stmt->setString(0, address);
     stmt->setString(1, account);

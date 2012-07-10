@@ -459,16 +459,16 @@ void PlayerMenu::SendQuestQueryResponse(Quest const* quest) const
 
     data << uint32(quest->GetSrcItemId());                  // source item id
     data << uint32(quest->GetFlags() & 0xFFFF);             // quest flags
-    data << uint32(quest->MinimapTargetMark);               // Minimap Target Mark, 1-Skull, 16-Unknown
+    data << uint32(quest->GetMinimapTargetMark());          // Minimap Target Mark, 1-Skull, 16-Unknown
     data << uint32(quest->GetCharTitleId());                // CharTitleId, new 2.4.0, player gets this title (id from CharTitles)
     data << uint32(quest->GetPlayersSlain());               // players slain
     data << uint32(quest->GetBonusTalents());               // bonus talents
     data << uint32(quest->GetRewArenaPoints());             // bonus arena points
-    data << uint32(quest->GetRewSkillLineId());            // reward skill line id
-    data << uint32(quest->GetRewSkillPoints());            // reward skill points
-    data << uint32(quest->GetRewRepMask());                // review rep show mask
-    data << uint32(quest->GetQuestGiverPortrait());        // questgiver portrait ID
-    data << uint32(quest->GetQuestTurnInPortrait());       // quest turn in portrait ID
+    data << uint32(quest->GetRewardSkillId());              // reward skill line id
+    data << uint32(quest->GetRewardSkillPoints());          // reward skill points
+    data << uint32(quest->GetRewardReputationMask());       // review rep show mask
+    data << uint32(quest->GetQuestGiverPortrait());         // questgiver portrait ID
+    data << uint32(quest->GetQuestTurnInPortrait());        // quest turn in portrait ID
 
     if (quest->HasFlag(QUEST_FLAGS_HIDDEN_REWARDS))
     {
@@ -546,10 +546,10 @@ void PlayerMenu::SendQuestQueryResponse(Quest const* quest) const
         data << uint32(quest->RequiredCurrencyCount[i]);
     }
 
-    data << questGiverTextWindow;
-    data << questGiverTargetName;
-    data << questTurnTextWindow;
-    data << questTurnTargetName;
+    data << quest->GetQuestGiverTextWindow();
+    data << quest->GetQuestGiverTargetName();
+    data << quest->GetQuestTurnTextWindow();
+    data << quest->GetQuestTurnTargetName();
 
     data << uint32(quest->GetSoundAccept());
     data << uint32(quest->GetSoundTurnIn());

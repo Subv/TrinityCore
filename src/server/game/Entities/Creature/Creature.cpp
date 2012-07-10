@@ -1136,7 +1136,7 @@ void Creature::SaveToDB(uint32 mapid, uint8 spawnMask, uint32 phaseMask)
 
 void Creature::SelectLevel(const CreatureTemplate* cinfo)
 {
-    uint32 rank = isPet()? 0 : cinfo->rank;
+    uint32 rank = isPet() ? 0 : cinfo->rank;
 
     // level
     uint8 minlevel = std::min(cinfo->maxlevel, cinfo->minlevel);
@@ -1178,7 +1178,8 @@ void Creature::SelectLevel(const CreatureTemplate* cinfo)
     SetFloatValue(UNIT_FIELD_MINRANGEDDAMAGE, cinfo->minrangedmg * damagemod);
     SetFloatValue(UNIT_FIELD_MAXRANGEDDAMAGE, cinfo->maxrangedmg * damagemod);
 
-    SetModifierValue(UNIT_MOD_ATTACK_POWER, BASE_VALUE, cinfo->attackpower * damagemod);
+    SetModifierValue(UNIT_MOD_ATTACK_POWER_POS, BASE_VALUE, cinfo->attackpower * damagemod);
+    SetModifierValue(UNIT_MOD_ATTACK_POWER_NEG, BASE_VALUE, 0);
 
 }
 

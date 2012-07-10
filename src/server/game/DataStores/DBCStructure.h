@@ -613,8 +613,8 @@ struct PhaseEntry
 
 struct ArmorLocationEntry
 {
-  uint32 InventoryType;                                  // 0
-  float Value[5];                                        // 1-5 multiplier for armor types (cloth...plate, no armor?)
+    uint32 InventoryType;                                  // 0
+    float Value[5];                                        // 1-5 multiplier for armor types (cloth...plate, no armor?)
 };
 
 struct AuctionHouseEntry
@@ -1165,16 +1165,16 @@ struct ItemArmorQualityEntry
 
 struct ItemArmorShieldEntry
 {
-  uint32 Id;                                             // 0 item level
-  uint32 Id2;                                            // 1 item level
-  float Value[7];                                        // 2-8 multiplier for item quality
+    uint32 Id;                                             // 0 item level
+    uint32 Id2;                                            // 1 item level
+    float Value[7];                                        // 2-8 multiplier for item quality
 };
 
 struct ItemArmorTotalEntry
 {
-  uint32 Id;                                             // 0 item level
-  uint32 Id2;                                            // 1 item level
-  float Value[4];                                        // 2-5 multiplier for armor types (cloth...plate)
+    uint32 Id;                                             // 0 item level
+    uint32 Id2;                                            // 1 item level
+    float Value[4];                                        // 2-5 multiplier for armor types (cloth...plate)
 };
 
 struct ItemBagFamilyEntry
@@ -1197,6 +1197,17 @@ struct ItemDisplayInfoEntry
                                                             // 9        m_texture[2]
                                                             // 10       m_itemVisual[8]
                                                             // 11       m_particleColorID
+};
+
+struct ItemDisenchantLootEntry
+{
+    uint32 Id;
+    uint32 ItemClass;
+    int32 Unk;
+    uint32 ItemQuality;
+    uint32 MinItemLevel;
+    uint32 MaxItemLevel;
+    uint32 RequiredDisenchantSkill;
 };
 
 //struct ItemCondExtCostsEntry

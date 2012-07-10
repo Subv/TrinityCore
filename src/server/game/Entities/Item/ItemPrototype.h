@@ -660,8 +660,8 @@ struct ItemTemplate
     float  DamageMin;
     float  DamageMax;
     float  DPS;
-    uint32 Armor;
     float  SpellPPMRate;
+    uint32 Armor;
     uint32 ScriptId;
     uint32 DisenchantID;
     uint32 RequiredDisenchantSkill;

@@ -28,7 +28,7 @@
 typedef std::list<uint32> SimpleFactionsList;
 SimpleFactionsList const* GetFactionTeamList(uint32 faction);
 
-char* GetPetName(uint32 petfamily, uint32 dbclang);
+char* GetPetName(uint32 petfamily);
 uint32 GetTalentSpellCost(uint32 spellId);
 TalentSpellPos const* GetTalentSpellPos(uint32 spellId);
 
@@ -120,6 +120,8 @@ extern DBCStorage <ItemArmorQualityEntry>        sItemArmorQualityStore;
 extern DBCStorage <ItemArmorShieldEntry>         sItemArmorShieldStore;
 extern DBCStorage <ItemArmorTotalEntry>          sItemArmorTotalStore;
 extern DBCStorage <ItemBagFamilyEntry>           sItemBagFamilyStore;
+extern DBCStorage <ItemDisenchantLootEntry>      sItemDisenchantLootStore;
+extern DBCStorage <ArmorLocationEntry>           sArmorLocationStore;
 extern DBCStorage <ItemDamageEntry>              sItemDamageAmmoStore;
 extern DBCStorage <ItemDamageEntry>              sItemDamageOneHandStore;
 extern DBCStorage <ItemDamageEntry>              sItemDamageOneHandCasterStore;

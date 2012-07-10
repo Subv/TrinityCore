@@ -288,7 +288,7 @@ void WorldSession::HandleTrainerBuySpellOpcode(WorldPacket & recv_data)
     else
         _player->learnSpell(spellId, false);
 
-    WorldPacket data(SMSG_TRAINER_BUY_SUCCEEDED, 12);
+    WorldPacket data(SMSG_TRAINER_BUY_RESULT, 12);
     data << uint64(guid);
     data << uint32(spellId);                                // should be same as in packet from client
     SendPacket(&data);
@@ -488,7 +488,7 @@ void WorldSession::SendBindPoint(Creature* npc)
     // send spell for homebinding (3286)
     npc->CastSpell(_player, bindspell, true);
 
-    WorldPacket data(SMSG_TRAINER_BUY_SUCCEEDED, (8+4));
+    WorldPacket data(SMSG_TRAINER_BUY_RESULT, (8+4));
     data << uint64(npc->GetGUID());
     data << uint32(bindspell);
     SendPacket(&data);
@@ -764,7 +764,8 @@ void WorldSession::HandleBuyStableSlot(WorldPacket & recv_data)
 
     if (GetPlayer()->m_stableSlots < MAX_PET_STABLES)
     {
-        StableSlotPricesEntry const* SlotPrice = sStableSlotPricesStore.LookupEntry(GetPlayer()->m_stableSlots+1);
+        // TODO: cataclysm system
+        /*StableSlotPricesEntry const* SlotPrice = sStableSlotPricesStore.LookupEntry(GetPlayer()->m_stableSlots+1);
         if (_player->HasEnoughMoney(SlotPrice->Price))
         {
             ++GetPlayer()->m_stableSlots;
@@ -772,7 +773,7 @@ void WorldSession::HandleBuyStableSlot(WorldPacket & recv_data)
             SendStableResult(STABLE_SUCCESS_BUY_SLOT);
         }
         else
-            SendStableResult(STABLE_ERR_MONEY);
+            SendStableResult(STABLE_ERR_MONEY);*/
     }
     else
         SendStableResult(STABLE_ERR_STABLE);

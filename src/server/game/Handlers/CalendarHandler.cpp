@@ -839,8 +839,9 @@ void WorldSession::SendCalendarClearPendingAction()
     uint64 guid = _player->GetGUID();
     sLog->outDebug(LOG_FILTER_NETWORKIO, "SMSG_CALENDAR_CLEAR_PENDING_ACTION [" UI64FMTD "]", guid);
 
-    WorldPacket data(SMSG_CALENDAR_CLEAR_PENDING_ACTION, 0);
-    SendPacket(&data);
+    // TODO: Cataclysm system
+    //WorldPacket data(SMSG_CALENDAR_CLEAR_PENDING_ACTION, 0);
+    //SendPacket(&data);
 }
 
 void WorldSession::SendCalendarCommandResult(CalendarError err, char const* param /*= NULL*/)

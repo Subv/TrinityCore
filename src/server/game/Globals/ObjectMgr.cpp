@@ -46,6 +46,7 @@
 #include "SpellScript.h"
 #include "PoolMgr.h"
 #include "DB2Structure.h"
+#include "DB2Stores.h"
 
 ScriptMapMap sQuestEndScripts;
 ScriptMapMap sQuestStartScripts;
@@ -240,10 +241,6 @@ ObjectMgr::~ObjectMgr()
 
     for (PetLevelInfoContainer::iterator i = _petInfoStore.begin(); i != _petInfoStore.end(); ++i)
         delete[] i->second;
-
-    // free only if loaded
-    for (int class_ = 0; class_ < MAX_CLASSES; ++class_)
-        delete[] _playerClassInfo[class_].levelInfo;
 
     for (int race = 0; race < MAX_RACES; ++race)
         for (int class_ = 0; class_ < MAX_CLASSES; ++class_)
@@ -2075,7 +2072,7 @@ void FillItemDamageFields(float* minDamage, float* maxDamage, float* dps, uint32
     if (!damageInfo)
         return;
 
-    *dps = damageInfo->DPS[quality];
+    *dps = damageInfo->Value[quality];
     float avgDamage = *dps * delay * 0.001f;
     *minDamage = (statScalingFactor * -0.5f + 1.0f) * avgDamage;
     *maxDamage = floor(float(avgDamage * (statScalingFactor * 0.5f + 1.0f) + 0.5f));
@@ -2122,7 +2119,7 @@ void FillDisenchantFields(uint32* disenchantID, uint32* requiredDisenchantSkill,
     if ((itemTemplate.Flags & (ITEM_PROTO_FLAG_CONJURED | ITEM_PROTO_FLAG_UNK6)) ||
         itemTemplate.Bonding == BIND_QUEST_ITEM || itemTemplate.Area || itemTemplate.Map ||
         itemTemplate.Stackable > 1 ||
-        !(itemTemplate.SellPrice || sItemCurrencyCostStore.LookupEntry(itemTemplate.ItemId)))
+        !(itemTemplate.SellPrice))
         return;
 
     for (uint32 i = 0; i < sItemDisenchantLootStore.GetNumRows(); ++i)
@@ -2179,7 +2176,7 @@ void ObjectMgr::LoadItemTemplates()
         itemTemplate.Quality = sparse->Quality;
         itemTemplate.Flags = sparse->Flags;
         itemTemplate.Flags2 = sparse->Flags2;
-        itemTemplate.BuyCount = std::max(sparse->BuyCount, 1u);
+        itemTemplate.BuyCount = 1;
         itemTemplate.BuyPrice = sparse->BuyPrice;
         itemTemplate.SellPrice = sparse->SellPrice;
         itemTemplate.InventoryType = db2Data->InventoryType;
@@ -2376,7 +2373,7 @@ void ObjectMgr::LoadItemTemplates()
                 itemTemplate.Spells[i].SpellCategory         = fields[70 + 6 * i + 4].GetUInt32();
                 itemTemplate.Spells[i].SpellCategoryCooldown = fields[70 + 6 * i + 5].GetInt32();
             }
-
+            
             itemTemplate.SpellPPMRate   = 0.0f;
             itemTemplate.Bonding        = fields[100].GetUInt32();
             itemTemplate.Description    = fields[101].GetString();
@@ -2453,7 +2450,7 @@ void ObjectMgr::LoadItemTemplateAddon()
     uint32 oldMSTime = getMSTime();
     uint32 count = 0;
 
-    QueryResult result = WorldDatabase.Query("SELECT Id, FlagsCu, FoodType, MinMoneyLoot, MaxMoneyLoot, SpellPPMChance FROM item_template_addon");
+    QueryResult result = WorldDatabase.Query("SELECT Id, BuyCount, FlagsCu, FoodType, MinMoneyLoot, MaxMoneyLoot, SpellPPMChance FROM item_template_addon");
     if (result)
     {
         do
@@ -2466,8 +2463,8 @@ void ObjectMgr::LoadItemTemplateAddon()
                 continue;
             }
 
-            uint32 minMoneyLoot = fields[3].GetUInt32();
-            uint32 maxMoneyLoot = fields[4].GetUInt32();
+            uint32 minMoneyLoot = fields[4].GetUInt32();
+            uint32 maxMoneyLoot = fields[5].GetUInt32();
             if (minMoneyLoot > maxMoneyLoot)
             {
                 sLog->outErrorDb("Minimum money loot specified in `item_template_addon` for item %u was greater than maximum amount, swapping.", itemId);
@@ -2475,11 +2472,13 @@ void ObjectMgr::LoadItemTemplateAddon()
             }
 
             ItemTemplate& itemTemplate = _itemTemplateStore[itemId];
-            itemTemplate.FlagsCu = fields[1].GetUInt32();
-            itemTemplate.FoodType = fields[2].GetUInt8();
+            itemTemplate.BuyCount = uint32(fields[1].GetUInt8());
+            itemTemplate.FlagsCu = fields[2].GetUInt32();
+            itemTemplate.FoodType = fields[3].GetUInt8();
             itemTemplate.MinMoneyLoot = minMoneyLoot;
             itemTemplate.MaxMoneyLoot = maxMoneyLoot;
-            itemTemplate.SpellPPMRate = fields[5].GetFloat();
+            itemTemplate.SpellPPMRate = fields[6].GetFloat();
+                
             ++count;
         } while (result->NextRow());
     }

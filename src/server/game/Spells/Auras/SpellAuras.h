@@ -229,7 +229,6 @@ class Aura
 
         int32 m_maxDuration;                                // Max aura duration
         int32 m_duration;                                   // Current time
-        int32 m_timeCla;                                    // Timer for power per sec calcultion
         int32 m_updateTargetMapInterval;                    // Timer for UpdateTargetMapOfEffect
 
         uint8 const m_casterLevel;                          // Aura level (store caster level for correct show level dep amount)

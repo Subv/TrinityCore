@@ -843,7 +843,6 @@ SpellInfo::SpellInfo(SpellEntry const* spellEntry)
     ManaCost = _power ? _power->manaCost : 0;
     ManaCostPerlevel = _power ? _power->manaCostPerlevel : 0;
     ManaCostPercentage = _power ? _power->ManaCostPercentage : 0;
-    ManaPerSecond = _power ? _power->manaPerSecond : 0;
 
     // SpellReagentsEntry
     SpellReagentsEntry const* _reagents = GetSpellReagents();

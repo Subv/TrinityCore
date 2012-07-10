@@ -754,7 +754,6 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
     m_canBlock = false;
     m_canDualWield = false;
     m_canTitanGrip = false;
-    m_ammoDPS = 0.0f;
 
     m_temporaryUnsummonedPetNumber = 0;
     //cache for UNIT_CREATED_BY_SPELL to allow
@@ -1174,11 +1173,6 @@ bool Player::Create(uint32 guidlow, CharacterCreateInfo* createInfo)
                     RemoveItem(INVENTORY_SLOT_BAG_0, i, true);
                     pItem = StoreItem(sDest, pItem, true);
                 }
-
-                // if  this is ammo then use it
-                msg = CanUseAmmo(pItem->GetEntry());
-                if (msg == EQUIP_ERR_OK)
-                    SetAmmo(pItem->GetEntry());
             }
         }
     }
@@ -7146,19 +7140,9 @@ void Player::UpdateHonorFields()
 
         // update yesterday's contribution
         if (m_lastHonorUpdateTime >= yesterday)
-        {
-            SetUInt32Value(PLAYER_FIELD_YESTERDAY_CONTRIBUTION, GetUInt32Value(PLAYER_FIELD_TODAY_CONTRIBUTION));
-
-            // this is the first update today, reset today's contribution
-            SetUInt32Value(PLAYER_FIELD_TODAY_CONTRIBUTION, 0);
             SetUInt32Value(PLAYER_FIELD_KILLS, MAKE_PAIR32(0, kills_today));
-        }
         else
-        {
-            // no honor/kills yesterday or today, reset
-            SetUInt32Value(PLAYER_FIELD_YESTERDAY_CONTRIBUTION, 0);
-            SetUInt32Value(PLAYER_FIELD_KILLS, 0);
-        }
+            SetUInt32Value(PLAYER_FIELD_KILLS, 0);            // no honor/kills yesterday or today, reset
     }
 
     m_lastHonorUpdateTime = now;
@@ -7742,9 +7726,6 @@ void Player::_ApplyItemMods(Item* item, uint8 slot, bool apply)
 
     _ApplyItemBonuses(proto, slot, apply);
 
-    if (slot == EQUIPMENT_SLOT_RANGED)
-        _ApplyAmmoBonuses();
-
     ApplyItemEquipSpell(item, apply);
     ApplyEnchantment(item, apply);
 
@@ -8311,7 +8292,7 @@ void Player::CastItemCombatSpell(Unit* target, WeaponAttackType attType, uint32 
 
             float chance = (float)spellInfo->ProcChance;
 
-            if (spellData.SpellPPMRate)
+            if (proto->SpellPPMRate)
             {
                 if (spellData.SpellId == 52781) // Persuasive Strike
                 {
@@ -8326,7 +8307,7 @@ void Player::CastItemCombatSpell(Unit* target, WeaponAttackType attType, uint32 
                     }
                 }
                 uint32 WeaponSpeed = GetAttackTime(attType);
-                chance = GetPPMProcChance(WeaponSpeed, spellData.SpellPPMRate, spellInfo);
+                chance = GetPPMProcChance(WeaponSpeed, proto->SpellPPMRate, spellInfo);
             }
             else if (chance > 100.0f)
             {
@@ -8529,9 +8510,6 @@ void Player::_RemoveAllItemMods()
                 _ApplyWeaponDependentAuraMods(m_items[i], WeaponAttackType(attacktype), false);
 
             _ApplyItemBonuses(proto, i, false);
-
-            if (i == EQUIPMENT_SLOT_RANGED)
-                _ApplyAmmoBonuses();
         }
     }
 
@@ -8558,9 +8536,6 @@ void Player::_ApplyAllItemMods()
                 _ApplyWeaponDependentAuraMods(m_items[i], WeaponAttackType(attacktype), true);
 
             _ApplyItemBonuses(proto, i, true);
-
-            if (i == EQUIPMENT_SLOT_RANGED)
-                _ApplyAmmoBonuses();
         }
     }
 
@@ -8603,63 +8578,6 @@ void Player::_ApplyAllLevelScaleItemMods(bool apply)
             _ApplyItemBonuses(proto, i, apply, true);
         }
     }
-}
-
-void Player::_ApplyAmmoBonuses()
-{
-    // check ammo
-    uint32 ammo_id = GetUInt32Value(PLAYER_AMMO_ID);
-    if (!ammo_id)
-        return;
-
-    float currentAmmoDPS;
-
-    ItemTemplate const* ammo_proto = sObjectMgr->GetItemTemplate(ammo_id);
-    if (!ammo_proto || ammo_proto->Class != ITEM_CLASS_PROJECTILE || !CheckAmmoCompatibility(ammo_proto))
-        currentAmmoDPS = 0.0f;
-    else
-        currentAmmoDPS = (ammo_proto->Damage[0].DamageMin + ammo_proto->Damage[0].DamageMax) / 2;
-
-    if (currentAmmoDPS == GetAmmoDPS())
-        return;
-
-    m_ammoDPS = currentAmmoDPS;
-
-    if (CanModifyStats())
-        UpdateDamagePhysical(RANGED_ATTACK);
-}
-
-bool Player::CheckAmmoCompatibility(const ItemTemplate* ammo_proto) const
-{
-    if (!ammo_proto)
-        return false;
-
-    // check ranged weapon
-    Item* weapon = GetWeaponForAttack(RANGED_ATTACK);
-    if (!weapon  || weapon->IsBroken())
-        return false;
-
-    ItemTemplate const* weapon_proto = weapon->GetTemplate();
-    if (!weapon_proto || weapon_proto->Class != ITEM_CLASS_WEAPON)
-        return false;
-
-    // check ammo ws. weapon compatibility
-    switch (weapon_proto->SubClass)
-    {
-        case ITEM_SUBCLASS_WEAPON_BOW:
-        case ITEM_SUBCLASS_WEAPON_CROSSBOW:
-            if (ammo_proto->SubClass != ITEM_SUBCLASS_ARROW)
-                return false;
-            break;
-        case ITEM_SUBCLASS_WEAPON_GUN:
-            if (ammo_proto->SubClass != ITEM_SUBCLASS_BULLET)
-                return false;
-            break;
-        default:
-            return false;
-    }
-
-    return true;
 }
 
 /*  If in a battleground a player dies, and an enemy removes the insignia, the player's bones is lootable
@@ -9932,7 +9850,7 @@ uint8 Player::FindEquipSlot(ItemTemplate const* proto, uint32 slot, bool swap) c
                     if (playerClass == CLASS_SHAMAN)
                         slots[0] = EQUIPMENT_SLOT_RANGED;
                     break;
-                case ITEM_SUBCLASS_ARMOR_MISC:
+                case ITEM_SUBCLASS_ARMOR_MISCELLANEOUS:
                     if (playerClass == CLASS_WARLOCK)
                         slots[0] = EQUIPMENT_SLOT_RANGED;
                     break;
@@ -11953,7 +11871,7 @@ InventoryResult Player::CanRollForItemInLFG(ItemTemplate const* proto, WorldObje
     if (proto->Class == ITEM_CLASS_WEAPON && GetSkillValue(item_weapon_skills[proto->SubClass]) == 0)
         return EQUIP_ERR_NO_REQUIRED_PROFICIENCY;
 
-    if (proto->Class == ITEM_CLASS_ARMOR && proto->SubClass > ITEM_SUBCLASS_ARMOR_MISC && proto->SubClass < ITEM_SUBCLASS_ARMOR_BUCKLER && proto->InventoryType != INVTYPE_CLOAK)
+    if (proto->Class == ITEM_CLASS_ARMOR && proto->SubClass > ITEM_SUBCLASS_ARMOR_MISCELLANEOUS && proto->SubClass < ITEM_SUBCLASS_ARMOR_BUCKLER && proto->InventoryType != INVTYPE_CLOAK)
     {
         if (_class == CLASS_WARRIOR || _class == CLASS_PALADIN || _class == CLASS_DEATH_KNIGHT)
         {
@@ -12016,41 +11934,6 @@ InventoryResult Player::CanUseAmmo(uint32 item) const
         return EQUIP_ERR_OK;
     }
     return EQUIP_ERR_ITEM_NOT_FOUND;
-}
-
-void Player::SetAmmo(uint32 item)
-{
-    if (!item)
-        return;
-
-    // already set
-    if (GetUInt32Value(PLAYER_AMMO_ID) == item)
-        return;
-
-    // check ammo
-    if (item)
-    {
-        InventoryResult msg = CanUseAmmo(item);
-        if (msg != EQUIP_ERR_OK)
-        {
-            SendEquipError(msg, NULL, NULL, item);
-            return;
-        }
-    }
-
-    SetUInt32Value(PLAYER_AMMO_ID, item);
-
-    _ApplyAmmoBonuses();
-}
-
-void Player::RemoveAmmo()
-{
-    SetUInt32Value(PLAYER_AMMO_ID, 0);
-
-    m_ammoDPS = 0.0f;
-
-    if (CanModifyStats())
-        UpdateDamagePhysical(RANGED_ATTACK);
 }
 
 Item* Player::StoreNewItem(ItemPosCountVec const& dest, uint32 item, bool update, int32 randomPropertyId)
@@ -16355,20 +16238,20 @@ void Player::SendQuestReward(Quest const* quest, uint32 XP, Object* questGiver)
     sGameEventMgr->HandleQuestComplete(questid);
     WorldPacket data(SMSG_QUESTGIVER_QUEST_COMPLETE, (4+4+4+4+4));
     data << uint8(0x80); // unk 4.0.1 flags
-    data << uint32(quest->GetRewSkillLineId());
+    data << uint32(quest->GetRewardSkillId());
     data << uint32(questid);
 
     if (getLevel() < sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL))
     {
         data << uint32(quest->GetRewOrReqMoney());
         data << uint32(quest->GetBonusTalents());              // bonus talents
-        data << uint32(quest->GetRewSkillPoints());
+        data << uint32(quest->GetRewardSkillPoints());
         data << uint32(XP);
     }
     else
     {
         data << uint32(quest->GetRewOrReqMoney() + int32(quest->GetRewMoneyMaxLevel() * sWorld->getRate(RATE_DROP_MONEY)));
-        data << uint32(quest->GetRewSkillPoints());              // bonus talents
+        data << uint32(quest->GetRewardSkillPoints());              // bonus talents
         data << uint32(0);
 
         data << uint32(0);
@@ -16666,19 +16549,6 @@ float Player::GetFloatValueFromArray(Tokens const& data, uint16 index)
 
 bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
 {
-    //// THE DB ISNT UPDATED TO THIS STRUCTURE YET!!!
-    ////                                                     0     1        2     3     4        5      6    7      8     9           10              11
-    //QueryResult* result = CharacterDatabase.PQuery("SELECT guid, account, name, race, class, gender, level, xp, money, playerBytes, playerBytes2, playerFlags, "
-     // 12          13          14          15   16           17        18        19         20         21          22           23                 24
-    //"position_x, position_y, position_z, map, orientation, taximask, cinematic, totaltime, leveltime, rest_bonus, logout_time, is_logout_resting, resettalents_cost, "
-    // 25                 26          27       28       29       30       31         32           33            34        35    36      37                 38         39
-    //"resettalents_time, talentTree, trans_x, trans_y, trans_z, trans_o, transguid, extra_flags, stable_slots, at_login, zone, online, death_expire_time, taxi_path, instance_mode_mask, "
-    // 40              41                42          43          44              45           46              47
-    //"conquestPoints, totalHonorPoints, totalKills, todayKills, yesterdayKills, chosenTitle, watchedFaction, drunk, "
-    // 48      49      50      51      52      53      54           55         56          57             58
-    //"health, power1, power2, power3, power4, power5, instance_id, speccount, activespec, exploredZones, equipmentCache, "
-    // 59           60          61               62
-    //"knownTitles, actionBars, grantableLevels, guildId FROM characters WHERE guid = '%u'", guid);
     PreparedQueryResult result = holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADFROM);
 
     if (!result)
@@ -16760,13 +16630,9 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
 
     SetUInt32Value(PLAYER_BYTES, fields[9].GetUInt32());
     SetUInt32Value(PLAYER_BYTES_2, fields[10].GetUInt32());
-    SetUInt32Value(PLAYER_BYTES_3, (fields[47].GetUInt16() & 0xFFFE) | fields[5].GetUInt8());
+    SetUInt32Value(PLAYER_BYTES_3, (fields[43].GetUInt16() & 0xFFFE) | fields[5].GetUInt8());
     SetUInt32Value(PLAYER_FLAGS, fields[11].GetUInt32());
-    SetInt32Value(PLAYER_FIELD_WATCHED_FACTION_INDEX, fields[46].GetUInt32());
-
-    SetUInt64Value(PLAYER_FIELD_KNOWN_CURRENCIES, fields[47].GetUInt64());
-
-    SetUInt32Value(PLAYER_AMMO_ID, fields[63].GetUInt32());
+    SetInt32Value(PLAYER_FIELD_WATCHED_FACTION_INDEX, fields[44].GetUInt32());
 
     // set which actionbars the client has active - DO NOT REMOVE EVER AGAIN (can be changed though, if it does change fieldwise)
     SetByteValue(PLAYER_FIELD_BYTES, 2, fields[60].GetUInt8());
@@ -16819,8 +16685,6 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
 
     _LoadArenaTeamInfo(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADARENAINFO));
 
-    SetArenaPoints(fields[39].GetUInt32());
-
     // check arena teams integrity
     for (uint32 arena_slot = 0; arena_slot < MAX_ARENA_SLOT; ++arena_slot)
     {
@@ -16837,11 +16701,8 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
             SetArenaTeamInfoField(arena_slot, ArenaTeamInfoType(j), 0);
     }
 
-    SetCurrency(CURRENCY_TYPE_CONQUEST_POINTS, fields[40].GetUInt32());
-    SetCurrency(CURRENCY_TYPE_HONOR_POINTS, fields[41].GetUInt32());
-    SetUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS, fields[42].GetUInt32());
-    SetUInt16Value(PLAYER_FIELD_KILLS, 0, fields[43].GetUInt16());
-    SetUInt16Value(PLAYER_FIELD_KILLS, 1, fields[44].GetUInt16());
+    SetUInt16Value(PLAYER_FIELD_KILLS, 0, fields[40].GetUInt16());
+    SetUInt16Value(PLAYER_FIELD_KILLS, 1, fields[41].GetUInt16());
 
     _LoadBoundInstances(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADBOUNDINSTANCES));
     _LoadInstanceTimeRestrictions(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADINSTANCELOCKTIMES));
@@ -17211,7 +17072,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
 
     // check PLAYER_CHOSEN_TITLE compatibility with PLAYER__FIELD_KNOWN_TITLES
     // note: PLAYER__FIELD_KNOWN_TITLES updated at quest status loaded
-    uint32 curTitle = fields[45].GetUInt32();
+    uint32 curTitle = fields[43].GetUInt32();
     if (curTitle && !HasTitle(curTitle))
         curTitle = 0;
 
@@ -17234,11 +17095,11 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     UpdateAllStats();
 
     // restore remembered power/health values (but not more max values)
-    uint32 savedHealth = fields[48].GetUInt32();
+    uint32 savedHealth = fields[46].GetUInt32();
     SetHealth(savedHealth > GetMaxHealth() ? GetMaxHealth() : savedHealth);
     for (uint8 i = 0; i < MAX_POWERS; ++i)
     {
-        uint32 savedPower = fields[49+i].GetUInt32();
+        uint32 savedPower = fields[47+i].GetUInt32();
         SetPower(Powers(i), savedPower > GetMaxPower(Powers(i)) ? GetMaxPower(Powers(i)) : savedPower);
     }
 
@@ -17315,7 +17176,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     if (m_grantableLevels > 0)
         SetByteValue(PLAYER_FIELD_BYTES, 1, 0x01);
 
-    m_guildId = fields[62].GetUInt32();
+    _guildGUID = MAKE_NEW_GUID(fields[62].GetUInt32(), 0, HIGHGUID_GUILD);
 
     _LoadDeclinedNames(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADDECLINEDNAMES));
 
@@ -18718,7 +18579,6 @@ void Player::SaveToDB(bool create /*=false*/)
         }
 
         stmt->setString(index++, ss.str());
-        stmt->setUInt32(index++, GetUInt32Value(PLAYER_AMMO_ID));
 
         ss.str("");
         for (uint32 i = 0; i < KNOWN_TITLES_SIZE*2; ++i)
@@ -18792,15 +18652,10 @@ void Player::SaveToDB(bool create /*=false*/)
         ss << m_taxi.SaveTaxiDestinationsToString();
 
         stmt->setString(index++, ss.str());
-        stmt->setUInt32(index++, GetArenaPoints());
-        stmt->setUInt32(index++, GetHonorPoints());
-        stmt->setUInt32(index++, GetUInt32Value(PLAYER_FIELD_TODAY_CONTRIBUTION));
-        stmt->setUInt32(index++, GetUInt32Value(PLAYER_FIELD_YESTERDAY_CONTRIBUTION));
         stmt->setUInt32(index++, GetUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS));
         stmt->setUInt16(index++, GetUInt16Value(PLAYER_FIELD_KILLS, 0));
         stmt->setUInt16(index++, GetUInt16Value(PLAYER_FIELD_KILLS, 1));
         stmt->setUInt32(index++, GetUInt32Value(PLAYER_CHOSEN_TITLE));
-        stmt->setUInt64(index++, GetUInt64Value(PLAYER_FIELD_KNOWN_CURRENCIES));
         stmt->setUInt32(index++, GetUInt32Value(PLAYER_FIELD_WATCHED_FACTION_INDEX));
         stmt->setUInt16(index++, (uint16)(GetUInt32Value(PLAYER_BYTES_3) & 0xFFFE));
         stmt->setUInt32(index++, GetHealth());
@@ -18834,7 +18689,6 @@ void Player::SaveToDB(bool create /*=false*/)
         }
 
         stmt->setString(index++, ss.str());
-        stmt->setUInt32(index++, GetUInt32Value(PLAYER_AMMO_ID));
 
         ss.str("");
         for (uint32 i = 0; i < KNOWN_TITLES_SIZE*2; ++i)
@@ -18845,8 +18699,9 @@ void Player::SaveToDB(bool create /*=false*/)
         stmt->setUInt32(index++, m_grantableLevels);
 
         stmt->setUInt8(index++, IsInWorld() ? 1 : 0);
+        stmt->setUInt32(index++, GetGuildId());
         // Index
-        stmt->setUInt32(index++, GetGUIDLow());
+        stmt->setUInt32(index, GetGUIDLow());
     }
 
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
@@ -20895,7 +20750,7 @@ void Player::InitDataForForm(bool reapplyMods)
 {
     ShapeshiftForm form = GetShapeshiftForm();
 
-    SpellShapeshiftEntry const* ssEntry = sSpellShapeshiftStore.LookupEntry(form);
+    SpellShapeshiftFormEntry const* ssEntry = sSpellShapeshiftFormStore.LookupEntry(form);
     if (ssEntry && ssEntry->attackSpeed)
     {
         SetAttackTime(BASE_ATTACK, ssEntry->attackSpeed);

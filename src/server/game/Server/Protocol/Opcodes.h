@@ -396,7 +396,7 @@ enum Opcodes
     CMSG_PET_ACTION                                  = 0x0AFC0, // 4.0.6a 13623
     CMSG_PET_ABANDON                                 = 0x0A480, // 4.0.6a 13623
     CMSG_PET_RENAME                                  = 0x038E8, // 4.0.6a 13623
-    SMSG_PET_NAME_INVALID                            = 0x01457, // 4.0.3a 13329 - 403
+    SMSG_PET_NAME_INVALID                            = 0x00000,
     SMSG_PET_SPELLS                                  = 0x0B780, // 4.0.6a 13623
     SMSG_PET_MODE                                    = 0x079C0, // 4.0.6a 13623
     CMSG_GOSSIP_HELLO                                = 0x074C8, // 4.0.6a 13623
@@ -601,7 +601,7 @@ enum Opcodes
     SMSG_SPELLDAMAGESHIELD                           = 0x073A0, // 4.0.6a 13623
     SMSG_SPELLNONMELEEDAMAGELOG                      = 0x074AC, // 4.0.6a 13623
     CMSG_LEARN_TALENT                                = 0x0A7CC, // 4.0.6a 13623
-    SMSG_RESURRECT_FAILED                            = 0x0D557, // 4.0.3a 13329 - 403
+    SMSG_RESURRECT_FAILED                            = 0x00000,
     CMSG_TOGGLE_PVP                                  = 0x06480, // 4.0.6a 13623
     SMSG_ZONE_UNDER_ATTACK                           = 0x0BD80, // 4.0.6a 13623
     MSG_AUCTION_HELLO                                = 0x0B3A0, // 4.0.6a 13623
@@ -649,7 +649,7 @@ enum Opcodes
     CMSG_AUTOBANK_ITEM                               = 0x066E4, // 4.0.6a 13623
     MSG_QUERY_NEXT_MAIL_TIME                         = 0x025C8, // 4.0.6a 13623
     SMSG_RECEIVED_MAIL                               = 0x075E4, // 4.0.6a 13623
-    SMSG_RAID_GROUP_ONLY                             = 0x00554, // 4.0.3a 13329
+    SMSG_RAID_GROUP_ONLY                             = 0x00000,
     CMSG_SET_DURABILITY_CHEAT                        = 0x100CE, // Unknown opcode ID
     CMSG_SET_PVP_RANK_CHEAT                          = 0x100CF, // Unknown opcode ID
     CMSG_ADD_PVP_MEDAL_CHEAT                         = 0x100D0, // Unknown opcode ID

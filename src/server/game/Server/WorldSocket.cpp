@@ -795,23 +795,19 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
                 clientSeed);
 
     // Get the account information from the realmd database
-    std::string safe_account = account; // Duplicate, else will screw the SHA hash verification below
-    LoginDatabase.EscapeString(safe_account);
-    // No SQL injection, username escaped.
-
-    //                                                 0       1          2       3     4  5      6          7       8         9      10
-    QueryResult result = LoginDatabase.PQuery ("SELECT id, sessionkey, last_ip, locked, v, s, expansion, mutetime, locale, recruiter, os FROM account "
-                                              "WHERE username = '%s'", safe_account.c_str());
+    PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_ACCOUNT_INFO_BY_NAME);
+    stmt->setString(0, account);
+    PreparedQueryResult result = LoginDatabase.Query(stmt);
 
     // Stop if the account is not found
     if (!result)
     {
-        packet.Initialize(SMSG_AUTH_RESPONSE, 1);
-        packet << uint8(AUTH_UNKNOWN_ACCOUNT);
+        packet.Initialize (SMSG_AUTH_RESPONSE, 1);
+        packet << uint8 (AUTH_UNKNOWN_ACCOUNT);
 
         SendPacket(packet);
 
-        sLog->outError ("WorldSocket::HandleAuthSession: Sent Auth Response (unknown account).");
+        sLog->outError("WorldSocket::HandleAuthSession: Sent Auth Response (unknown account).");
         return -1;
     }
 
@@ -857,6 +853,17 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
     k.SetHexStr(fields[1].GetCString());
 
     time_t mutetime = time_t(fields[7].GetUInt64());
+    
+    //! Negative mutetime indicates amount of seconds to be muted effective on next login - which is now.
+    if (mutetime < 0)
+    {
+        mutetime = time(NULL) + llabs(mutetime);
+
+        PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_UPD_MUTE_TIME);
+        stmt->setInt64(0, mutetime);
+        stmt->setUInt32(1, id);
+        LoginDatabase.Execute(stmt);
+    }
 
     locale = LocaleConstant(fields[8].GetUInt8());
     if (locale >= TOTAL_LOCALES)
@@ -866,29 +873,24 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
     std::string os = fields[10].GetString();
 
     // Checks gmlevel per Realm
-    result =
-        LoginDatabase.PQuery ("SELECT "
-                              "RealmID, "            //0
-                              "gmlevel "             //1
-                              "FROM account_access "
-                              "WHERE id = '%d'"
-                              " AND (RealmID = '%d'"
-                              " OR RealmID = '-1')",
-                              id, realmID);
+    stmt = LoginDatabase.GetPreparedStatement(LOGIN_GET_GMLEVEL_BY_REALMID);
+    stmt->setUInt32(0, id);
+    stmt->setInt32(1, int32(realmID));
+    result = LoginDatabase.Query(stmt);
+
     if (!result)
         security = 0;
     else
     {
         fields = result->Fetch();
-        security = fields[1].GetInt32();
+        security = fields[0].GetUInt8();
     }
 
     // Re-check account ban (same check as in realmd)
-    QueryResult banresult =
-          LoginDatabase.PQuery ("SELECT 1 FROM account_banned WHERE id = %u AND active = 1 "
-                                "UNION "
-                                "SELECT 1 FROM ip_banned WHERE ip = '%s'",
-                                id, GetRemoteAddress().c_str());
+    stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_BANS);
+    stmt->setUInt32(0, id);
+    stmt->setString(1, GetRemoteAddress());
+    PreparedQueryResult banresult = LoginDatabase.Query(stmt);
 
     if (banresult) // if account banned
     {
@@ -927,20 +929,33 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
     sha.Finalize();
 
     std::string address = GetRemoteAddress();
+    
+    if (memcmp (sha.GetDigest(), digest, 20))
+    {
+        packet.Initialize (SMSG_AUTH_RESPONSE, 1);
+        packet << uint8 (AUTH_FAILED);
+
+        SendPacket(packet);
+
+        sLog->outError("WorldSocket::HandleAuthSession: Authentication failed for account: %u ('%s') address: %s", id, account.c_str(), address.c_str());
+        return -1;
+    }
 
     sLog->outStaticDebug ("WorldSocket::HandleAuthSession: Client '%s' authenticated successfully from %s.",
                 account.c_str(),
                 address.c_str());
 
     // Check if this user is by any chance a recruiter
-    result = LoginDatabase.PQuery ("SELECT 1 FROM account WHERE recruiter = %u", id);
+    stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_ACCOUNT_RECRUITER);
+    stmt->setUInt32(0, id);
+    result = LoginDatabase.Query(stmt);
 
     bool isRecruiter = false;
     if (result)
         isRecruiter = true;
 
     // Update the last_ip in the database
-    PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_UPDATE_LAST_IP);
+    PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_UPD_LAST_IP);
 
     stmt->setString(0, address);
     stmt->setString(1, account);

@@ -456,13 +456,19 @@ void PlayerMenu::SendQuestQueryResponse(Quest const* quest) const
     // rewarded honor points
     data << Trinity::Honor::hk_honor_at_level(_session->GetPlayer()->getLevel(), quest->GetRewHonorMultiplier());
     data << float(0);                                       // new reward honor (multipled by ~62 at client side)
+
     data << uint32(quest->GetSrcItemId());                  // source item id
     data << uint32(quest->GetFlags() & 0xFFFF);             // quest flags
+    data << uint32(quest->MinimapTargetMark);               // Minimap Target Mark, 1-Skull, 16-Unknown
     data << uint32(quest->GetCharTitleId());                // CharTitleId, new 2.4.0, player gets this title (id from CharTitles)
     data << uint32(quest->GetPlayersSlain());               // players slain
     data << uint32(quest->GetBonusTalents());               // bonus talents
     data << uint32(quest->GetRewArenaPoints());             // bonus arena points
-    data << uint32(0);                                      // review rep show mask
+    data << uint32(quest->GetRewSkillLineId());            // reward skill line id
+    data << uint32(quest->GetRewSkillPoints());            // reward skill points
+    data << uint32(quest->GetRewRepMask());                // review rep show mask
+    data << uint32(quest->GetQuestGiverPortrait());        // questgiver portrait ID
+    data << uint32(quest->GetQuestTurnInPortrait());       // quest turn in portrait ID
 
     if (quest->HasFlag(QUEST_FLAGS_HIDDEN_REWARDS))
     {
@@ -514,7 +520,7 @@ void PlayerMenu::SendQuestQueryResponse(Quest const* quest) const
 
         data << uint32(quest->RequiredNpcOrGoCount[i]);
         data << uint32(quest->RequiredSourceItemId[i]);
-        data << uint32(0);                                  // req source count?
+        data << uint32(quest->RequiredSourceItemCount[i]);
     }
 
     for (uint32 i = 0; i < QUEST_ITEM_OBJECTIVES_COUNT; ++i)
@@ -523,8 +529,30 @@ void PlayerMenu::SendQuestQueryResponse(Quest const* quest) const
         data << uint32(quest->RequiredItemCount[i]);
     }
 
+    data << uint32(quest->GetRequiredSpell());
+
     for (uint32 i = 0; i < QUEST_OBJECTIVES_COUNT; ++i)
         data << questObjectiveText[i];
+
+    for (uint32 i = 0; i < QUEST_REWARD_CURRENCY_COUNT; ++i)                               // 4.0.0 currency reward id and count
+    {
+        data << uint32(quest->RewardCurrencyId[i]);
+        data << uint32(quest->RewardCurrencyCount[i]);
+    }
+
+    for (uint32 i = 0; i < QUEST_REQUIRED_CURRENCY_COUNT; ++i)                               // 4.0.0 currency required id and count
+    {
+        data << uint32(quest->RequiredCurrencyId[i]);
+        data << uint32(quest->RequiredCurrencyCount[i]);
+    }
+
+    data << questGiverTextWindow;
+    data << questGiverTargetName;
+    data << questTurnTextWindow;
+    data << questTurnTargetName;
+
+    data << uint32(quest->GetSoundAccept());
+    data << uint32(quest->GetSoundTurnIn());
 
     _session->SendPacket(&data);
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Sent SMSG_QUEST_QUERY_RESPONSE questid=%u", quest->GetQuestId());

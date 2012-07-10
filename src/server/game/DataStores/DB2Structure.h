@@ -41,14 +41,14 @@
 // Structures used to access raw DB2 data and required packing to portability
 struct ItemEntry
 {
-    uint32   ID;                                             // 0
-    uint32   Class;                                          // 1
-    uint32   SubClass;                                       // 2
-    int32    Unk0;                                           // 3
-    int32    Material;                                       // 4
-    uint32   DisplayId;                                      // 5
-    uint32   InventoryType;                                  // 6
-    uint32   Sheath;                                         // 7
+   uint32   ID;                                             // 0
+   uint32   Class;                                          // 1
+   uint32   SubClass;                                       // 2 some items have strange subclasses
+   int32    Unk0;                                           // 3
+   int32    Material;                                       // 4
+   uint32   DisplayId;                                      // 5
+   uint32   InventoryType;                                  // 6
+   uint32   Sheath;                                         // 7
 };
 
 struct ItemSparseEntry
@@ -57,9 +57,6 @@ struct ItemSparseEntry
     uint32     Quality;                                      // 1
     uint32     Flags;                                        // 2
     uint32     Flags2;                                       // 3
-    float      Unk430_1;
-    float      Unk430_2;
-    uint32     BuyCount;
     uint32     BuyPrice;                                     // 4
     uint32     SellPrice;                                    // 5
     uint32     InventoryType;                                // 6
@@ -107,6 +104,7 @@ struct ItemSparseEntry
     uint32     RandomProperty;                               // 108
     uint32     RandomSuffix;                                 // 109
     uint32     ItemSet;                                      // 110
+    uint32     MaxDurability;                                // 111
     uint32     Area;                                         // 112
     uint32     Map;                                          // 113
     uint32     BagFamily;                                    // 114

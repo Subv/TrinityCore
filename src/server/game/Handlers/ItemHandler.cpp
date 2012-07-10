@@ -340,12 +340,9 @@ void WorldSession::HandleItemQuerySingleOpcode(WorldPacket & recv_data)
         }
         data << pProto->ScalingStatDistribution;            // scaling stats distribution
         data << pProto->ScalingStatValue;                   // some kind of flags used to determine stat values column
-        for (int i = 0; i < MAX_ITEM_PROTO_DAMAGES; ++i)
-        {
-            data << pProto->Damage[i].DamageMin;
-            data << pProto->Damage[i].DamageMax;
-            data << pProto->Damage[i].DamageType;
-        }
+        data << pProto->DamageMin;
+        data << pProto->DamageMax;
+        data << pProto->DamageType;
 
         // resistances (7)
         data << pProto->Armor;

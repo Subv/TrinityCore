@@ -850,6 +850,8 @@ class ObjectMgr
         void LoadGameObjectLocales();
         void LoadGameobjects();
         void LoadItemTemplates();
+        void LoadItemTemplateAddon();
+        void LoadItemScriptNames();
         void LoadItemLocales();
         void LoadItemSetNames();
         void LoadItemSetNameLocales();

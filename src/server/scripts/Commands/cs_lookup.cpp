@@ -110,9 +110,9 @@ public:
                 // send area in "id - [name]" format
                 std::ostringstream ss;
                 if (handler->GetSession())
-                    ss << areaEntry->ID << " - |cffffffff|Harea:" << areaEntry->ID << "|h[" << name << ' ' << localeNames[locale]<< "]|h|r";
+                    ss << areaEntry->ID << " - |cffffffff|Harea:" << areaEntry->ID << "|h[" << name << ' ' << localeNames[handler->GetSessionDbcLocale()]<< "]|h|r";
                 else
-                    ss << areaEntry->ID << " - " << name << ' ' << localeNames[locale];
+                    ss << areaEntry->ID << " - " << name << ' ' << localeNames[handler->GetSessionDbcLocale()];
 
                 handler->SendSysMessage(ss.str().c_str());
 
@@ -288,72 +288,54 @@ public:
             {
                 FactionState const* factionState = target ? target->GetReputationMgr().GetState(factionEntry) : NULL;
 
-                int locale = handler->GetSessionDbcLocale();
-                std::string name = factionEntry->name[locale];
+                std::string name = factionEntry->name;
                 if (name.empty())
                     continue;
 
                 if (!Utf8FitTo(name, wNamePart))
+                    continue;
+
+                if (maxResults && count++ == maxResults)
                 {
-                    locale = 0;
-                    for (; locale < TOTAL_LOCALES; ++locale)
-                    {
-                        if (locale == handler->GetSessionDbcLocale())
-                            continue;
-
-                        name = factionEntry->name[locale];
-                        if (name.empty())
-                            continue;
-
-                        if (Utf8FitTo(name, wNamePart))
-                            break;
-                    }
+                    handler->PSendSysMessage(LANG_COMMAND_LOOKUP_MAX_RESULTS, maxResults);
+                    return true;
                 }
 
-                if (locale < TOTAL_LOCALES)
+                // send faction in "id - [faction] rank reputation [visible] [at war] [own team] [unknown] [invisible] [inactive]" format
+                // or              "id - [faction] [no reputation]" format
+                std::ostringstream ss;
+                if (handler->GetSession())
+                    ss << id << " - |cffffffff|Hfaction:" << id << "|h[" << name << ' ' << localeNames[handler->GetSessionDbcLocale()] << "]|h|r";
+                else
+                    ss << id << " - " << name << ' ' << localeNames[handler->GetSessionDbcLocale()];
+
+                if (factionState) // and then target != NULL also
                 {
-                    if (maxResults && count++ == maxResults)
-                    {
-                        handler->PSendSysMessage(LANG_COMMAND_LOOKUP_MAX_RESULTS, maxResults);
-                        return true;
-                    }
+                    uint32 index = target->GetReputationMgr().GetReputationRankStrIndex(factionEntry);
+                    std::string rankName = handler->GetTrinityString(index);
 
-                    // send faction in "id - [faction] rank reputation [visible] [at war] [own team] [unknown] [invisible] [inactive]" format
-                    // or              "id - [faction] [no reputation]" format
-                    std::ostringstream ss;
-                    if (handler->GetSession())
-                        ss << id << " - |cffffffff|Hfaction:" << id << "|h[" << name << ' ' << localeNames[locale] << "]|h|r";
-                    else
-                        ss << id << " - " << name << ' ' << localeNames[locale];
+                    ss << ' ' << rankName << "|h|r (" << target->GetReputationMgr().GetReputation(factionEntry) << ')';
 
-                    if (factionState) // and then target != NULL also
-                    {
-                        uint32 index = target->GetReputationMgr().GetReputationRankStrIndex(factionEntry);
-                        std::string rankName = handler->GetTrinityString(index);
-
-                        ss << ' ' << rankName << "|h|r (" << target->GetReputationMgr().GetReputation(factionEntry) << ')';
-
-                        if (factionState->Flags & FACTION_FLAG_VISIBLE)
-                            ss << handler->GetTrinityString(LANG_FACTION_VISIBLE);
-                        if (factionState->Flags & FACTION_FLAG_AT_WAR)
-                            ss << handler->GetTrinityString(LANG_FACTION_ATWAR);
-                        if (factionState->Flags & FACTION_FLAG_PEACE_FORCED)
-                            ss << handler->GetTrinityString(LANG_FACTION_PEACE_FORCED);
-                        if (factionState->Flags & FACTION_FLAG_HIDDEN)
-                            ss << handler->GetTrinityString(LANG_FACTION_HIDDEN);
-                        if (factionState->Flags & FACTION_FLAG_INVISIBLE_FORCED)
-                            ss << handler->GetTrinityString(LANG_FACTION_INVISIBLE_FORCED);
-                        if (factionState->Flags & FACTION_FLAG_INACTIVE)
-                            ss << handler->GetTrinityString(LANG_FACTION_INACTIVE);
-                    }
-                    else
-                        ss << handler->GetTrinityString(LANG_FACTION_NOREPUTATION);
-
-                    handler->SendSysMessage(ss.str().c_str());
-
-                    if (!found)
-                        found = true;
+                    if (factionState->Flags & FACTION_FLAG_VISIBLE)
+                        ss << handler->GetTrinityString(LANG_FACTION_VISIBLE);
+                    if (factionState->Flags & FACTION_FLAG_AT_WAR)
+                        ss << handler->GetTrinityString(LANG_FACTION_ATWAR);
+                    if (factionState->Flags & FACTION_FLAG_PEACE_FORCED)
+                        ss << handler->GetTrinityString(LANG_FACTION_PEACE_FORCED);
+                    if (factionState->Flags & FACTION_FLAG_HIDDEN)
+                        ss << handler->GetTrinityString(LANG_FACTION_HIDDEN);
+                    if (factionState->Flags & FACTION_FLAG_INVISIBLE_FORCED)
+                        ss << handler->GetTrinityString(LANG_FACTION_INVISIBLE_FORCED);
+                    if (factionState->Flags & FACTION_FLAG_INACTIVE)
+                        ss << handler->GetTrinityString(LANG_FACTION_INACTIVE);
                 }
+                else
+                    ss << handler->GetTrinityString(LANG_FACTION_NOREPUTATION);
+
+                handler->SendSysMessage(ss.str().c_str());
+
+                if (!found)
+                    found = true;
             }
         }
 
@@ -469,44 +451,27 @@ public:
             if (set)
             {
                 int locale = handler->GetSessionDbcLocale();
-                std::string name = set->name[locale];
+                std::string name = set->name;
                 if (name.empty())
                     continue;
 
                 if (!Utf8FitTo(name, wNamePart))
+                    continue;
+                    
+                if (maxResults && count++ == maxResults)
                 {
-                    locale = 0;
-                    for (; locale < TOTAL_LOCALES; ++locale)
-                    {
-                        if (locale == handler->GetSessionDbcLocale())
-                            continue;
-
-                        name = set->name[locale];
-                        if (name.empty())
-                            continue;
-
-                        if (Utf8FitTo(name, wNamePart))
-                            break;
-                    }
+                    handler->PSendSysMessage(LANG_COMMAND_LOOKUP_MAX_RESULTS, maxResults);
+                    return true;
                 }
 
-                if (locale < TOTAL_LOCALES)
-                {
-                    if (maxResults && count++ == maxResults)
-                    {
-                        handler->PSendSysMessage(LANG_COMMAND_LOOKUP_MAX_RESULTS, maxResults);
-                        return true;
-                    }
+                // send item set in "id - [namedlink locale]" format
+                if (handler->GetSession())
+                    handler->PSendSysMessage(LANG_ITEMSET_LIST_CHAT, id, id, name.c_str(), localeNames[locale]);
+                else
+                    handler->PSendSysMessage(LANG_ITEMSET_LIST_CONSOLE, id, name.c_str(), localeNames[locale]);
 
-                    // send item set in "id - [namedlink locale]" format
-                    if (handler->GetSession())
-                        handler->PSendSysMessage(LANG_ITEMSET_LIST_CHAT, id, id, name.c_str(), localeNames[locale]);
-                    else
-                        handler->PSendSysMessage(LANG_ITEMSET_LIST_CONSOLE, id, name.c_str(), localeNames[locale]);
-
-                    if (!found)
-                        found = true;
-                }
+                if (!found)
+                    found = true;
             }
         }
         if (!found)
@@ -778,9 +743,9 @@ public:
 
                 // send skill in "id - [namedlink locale]" format
                 if (handler->GetSession())
-                    handler->PSendSysMessage(LANG_SKILL_LIST_CHAT, id, id, name.c_str(), localeNames[locale], knownStr, valStr);
+                    handler->PSendSysMessage(LANG_SKILL_LIST_CHAT, id, id, name.c_str(), localeNames[handler->GetSessionDbcLocale()], knownStr, valStr);
                 else
-                    handler->PSendSysMessage(LANG_SKILL_LIST_CONSOLE, id, name.c_str(), localeNames[locale], knownStr, valStr);
+                    handler->PSendSysMessage(LANG_SKILL_LIST_CONSOLE, id, name.c_str(), localeNames[handler->GetSessionDbcLocale()], knownStr, valStr);
 
                 if (!found)
                     found = true;
@@ -859,9 +824,9 @@ public:
                     ss << handler->GetTrinityString(LANG_SPELL_RANK) << rank;
 
                 if (handler->GetSession())
-                    ss << ' ' << localeNames[locale] << "]|h|r";
+                    ss << ' ' << localeNames[handler->GetSessionDbcLocale()] << "]|h|r";
                 else
-                    ss << ' ' << localeNames[locale];
+                    ss << ' ' << localeNames[handler->GetSessionDbcLocale()];
 
                 if (talent)
                     ss << handler->GetTrinityString(LANG_TALENT);
@@ -925,10 +890,10 @@ public:
 
                 // send taxinode in "id - [name] (Map:m X:x Y:y Z:z)" format
                 if (handler->GetSession())
-                    handler->PSendSysMessage(LANG_TAXINODE_ENTRY_LIST_CHAT, id, id, name.c_str(), localeNames[locale],
+                    handler->PSendSysMessage(LANG_TAXINODE_ENTRY_LIST_CHAT, id, id, name.c_str(), localeNames[handler->GetSessionDbcLocale()],
                         nodeEntry->map_id, nodeEntry->x, nodeEntry->y, nodeEntry->z);
                 else
-                    handler->PSendSysMessage(LANG_TAXINODE_ENTRY_LIST_CONSOLE, id, name.c_str(), localeNames[locale],
+                    handler->PSendSysMessage(LANG_TAXINODE_ENTRY_LIST_CONSOLE, id, name.c_str(), localeNames[handler->GetSessionDbcLocale()],
                         nodeEntry->map_id, nodeEntry->x, nodeEntry->y, nodeEntry->z);
 
                 if (!found)

@@ -1895,6 +1895,9 @@ struct SpellEntry
     uint32 SpellTargetRestrictionsId;                    // 44       SpellTargetRestrictions.dbc
     uint32 SpellTotemsId;                                // 45       SpellTotems.dbc
     //uint32 unk2;                                       // 46
+
+    // struct access functions
+    SpellEffectEntry const* GetSpellEffect(uint32 eff) const;
 };
 
 typedef std::set<uint32> SpellCategorySet;

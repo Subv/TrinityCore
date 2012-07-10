@@ -2636,7 +2636,7 @@ void SpellMgr::LoadSpellInfoStore()
 
                 if (skillLine->skillId != cFamily->skillLine[0] && skillLine->skillId != cFamily->skillLine[1])
                     continue;
-                if (spellInfo->spellLevel)
+                if (spellInfo->SpellLevel)
                     continue;
 
                 if (skillLine->learnOnGetSkill != ABILITY_LEARNED_ON_GET_RACE_OR_CLASS_SKILL)
@@ -3084,7 +3084,7 @@ void SpellMgr::LoadDbcDataCorrections()
                 break;
             case 42818: // Headless Horseman - Wisp Flight Port
             case 42821: // Headless Horseman - Wisp Flight Missile
-                spellInfo->RangeEntry = 6; // 100 yards
+                spellInfo->RangeEntry = sSpellRangeStore.LookupEntry(6); // 100 yards
                 break;
             case 36350: //They Must Burn Bomb Aura (self)
                 spellInfo->Effects[0].TriggerSpell = 36325; // They Must Burn Bomb Drop (DND)
@@ -3311,9 +3311,9 @@ void SpellMgr::LoadDbcDataCorrections()
             case 58654: // Flametongue Totem rank 7 (Aura)
             case 58655: // Flametongue Totem rank 8 (Aura)
                 spellInfo->Effects[0].TargetA = SpellImplicitTargetInfo(TARGET_UNIT_CASTER);
-                spellInfo->Effects[1].TargetA[1] = SpellImplicitTargetInfo(TARGET_UNIT_CASTER);
-                spellInfo->Effects[0].TargetB[0] = SpellImplicitTargetInfo();
-                spellInfo->Effects[1].TargetB[1] = SpellImplicitTargetInfo();
+                spellInfo->Effects[1].TargetA = SpellImplicitTargetInfo(TARGET_UNIT_CASTER);
+                spellInfo->Effects[0].TargetB = SpellImplicitTargetInfo();
+                spellInfo->Effects[1].TargetB = SpellImplicitTargetInfo();
                 break;
             case 53241: // Marked for Death (Rank 1)
             case 53243: // Marked for Death (Rank 2)

@@ -301,6 +301,7 @@ public:
     uint32 AttributesEx5;
     uint32 AttributesEx6;
     uint32 AttributesEx7;
+    uint32 AttributesEx8;
     uint32 AttributesCu;
     uint32 Stances;
     uint32 StancesNot;
@@ -335,7 +336,6 @@ public:
     uint32 ManaCost;
     uint32 ManaCostPerlevel;
     uint32 ManaPerSecond;
-    uint32 ManaPerSecondPerLevel;
     uint32 ManaCostPercentage;
     uint32 RuneCostID;
     SpellRangeEntry const* RangeEntry;
@@ -361,6 +361,32 @@ public:
     uint32 PreventionType;
     int32  AreaGroupId;
     uint32 SchoolMask;
+    uint32 SpellDifficultyId;
+    uint32 SpellScalingId;
+    uint32 SpellAuraOptionsId;
+    uint32 SpellAuraRestrictionsId;
+    uint32 SpellCastingRequirementsId;
+    uint32 SpellCategoriesId;
+    uint32 SpellClassOptionsId;
+    uint32 SpellCooldownsId;
+    uint32 SpellEquippedItemsId;
+    uint32 SpellInterruptsId;
+    uint32 SpellLevelsId;
+    uint32 SpellPowerId;
+    uint32 SpellReagentsId;
+    uint32 SpellShapeshiftId;
+    uint32 SpellTargetRestrictionsId;
+    uint32 SpellTotemsId;
+    // SpellScalingEntry
+    int32  castTimeMin;
+    int32  castTimeMax;
+    uint32 castScalingMaxLevel;
+    uint32 playerClass;
+    float  Multiplier[3];
+    float  RandomMultiplier[3];
+    float  OtherMultiplier[3];
+    float  CoefBase;
+    uint32 CoefLevelBase;
     SpellEffectInfo Effects[MAX_SPELL_EFFECTS];
     uint32 ExplicitTargetMask;
     SpellChainNode const* ChainEntry;

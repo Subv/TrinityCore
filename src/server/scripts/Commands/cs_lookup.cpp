@@ -819,83 +819,65 @@ public:
             SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(id);
             if (spellInfo)
             {
-                int locale = handler->GetSessionDbcLocale();
-                std::string name = spellInfo->SpellName[locale];
+                std::string name = spellInfo->SpellName;
                 if (name.empty())
                     continue;
 
                 if (!Utf8FitTo(name, wNamePart))
+                    continue;
+
+                if (maxResults && count++ == maxResults)
                 {
-                    locale = 0;
-                    for (; locale < TOTAL_LOCALES; ++locale)
-                    {
-                        if (locale == handler->GetSessionDbcLocale())
-                            continue;
-
-                        name = spellInfo->SpellName[locale];
-                        if (name.empty())
-                            continue;
-
-                        if (Utf8FitTo(name, wNamePart))
-                            break;
-                    }
+                    handler->PSendSysMessage(LANG_COMMAND_LOOKUP_MAX_RESULTS, maxResults);
+                    return true;
                 }
 
-                if (locale < TOTAL_LOCALES)
-                {
-                    if (maxResults && count++ == maxResults)
-                    {
-                        handler->PSendSysMessage(LANG_COMMAND_LOOKUP_MAX_RESULTS, maxResults);
-                        return true;
-                    }
+                bool known = target && target->HasSpell(id);
+                bool learn = (spellInfo->Effects[0].Effect == SPELL_EFFECT_LEARN_SPELL);
 
-                    bool known = target && target->HasSpell(id);
-                    bool learn = (spellInfo->Effects[0].Effect == SPELL_EFFECT_LEARN_SPELL);
+                SpellInfo const* learnSpellInfo = sSpellMgr->GetSpellInfo(spellInfo->Effects[0].TriggerSpell);
 
-                    SpellInfo const* learnSpellInfo = sSpellMgr->GetSpellInfo(spellInfo->Effects[0].TriggerSpell);
+                uint32 talentCost = GetTalentSpellCost(id);
 
-                    uint32 talentCost = GetTalentSpellCost(id);
+                bool talent = (talentCost > 0);
+                bool passive = spellInfo->IsPassive();
+                bool active = target && target->HasAura(id);
 
-                    bool talent = (talentCost > 0);
-                    bool passive = spellInfo->IsPassive();
-                    bool active = target && target->HasAura(id);
+                // unit32 used to prevent interpreting uint8 as char at output
+                // find rank of learned spell for learning spell, or talent rank
+                uint32 rank = talentCost ? talentCost : learn && learnSpellInfo ? learnSpellInfo->GetRank() : spellInfo->GetRank();
 
-                    // unit32 used to prevent interpreting uint8 as char at output
-                    // find rank of learned spell for learning spell, or talent rank
-                    uint32 rank = talentCost ? talentCost : learn && learnSpellInfo ? learnSpellInfo->GetRank() : spellInfo->GetRank();
+                // send spell in "id - [name, rank N] [talent] [passive] [learn] [known]" format
+                std::ostringstream ss;
+                if (handler->GetSession())
+                    ss << id << " - |cffffffff|Hspell:" << id << "|h[" << name;
+                else
+                    ss << id << " - " << name;
 
-                    // send spell in "id - [name, rank N] [talent] [passive] [learn] [known]" format
-                    std::ostringstream ss;
-                    if (handler->GetSession())
-                        ss << id << " - |cffffffff|Hspell:" << id << "|h[" << name;
-                    else
-                        ss << id << " - " << name;
+                // include rank in link name
+                if (rank)
+                    ss << handler->GetTrinityString(LANG_SPELL_RANK) << rank;
 
-                    // include rank in link name
-                    if (rank)
-                        ss << handler->GetTrinityString(LANG_SPELL_RANK) << rank;
+                if (handler->GetSession())
+                    ss << ' ' << localeNames[locale] << "]|h|r";
+                else
+                    ss << ' ' << localeNames[locale];
 
-                    if (handler->GetSession())
-                        ss << ' ' << localeNames[locale] << "]|h|r";
-                    else
-                        ss << ' ' << localeNames[locale];
+                if (talent)
+                    ss << handler->GetTrinityString(LANG_TALENT);
+                if (passive)
+                    ss << handler->GetTrinityString(LANG_PASSIVE);
+                if (learn)
+                    ss << handler->GetTrinityString(LANG_LEARN);
+                if (known)
+                    ss << handler->GetTrinityString(LANG_KNOWN);
+                if (active)
+                    ss << handler->GetTrinityString(LANG_ACTIVE);
 
-                    if (talent)
-                        ss << handler->GetTrinityString(LANG_TALENT);
-                    if (passive)
-                        ss << handler->GetTrinityString(LANG_PASSIVE);
-                    if (learn)
-                        ss << handler->GetTrinityString(LANG_LEARN);
-                    if (known)
-                        ss << handler->GetTrinityString(LANG_KNOWN);
-                    if (active)
-                        ss << handler->GetTrinityString(LANG_ACTIVE);
+                handler->SendSysMessage(ss.str().c_str());
 
-                    handler->SendSysMessage(ss.str().c_str());
-
-                    if (!found)
-                        found = true;
-                }
+                if (!found)
+                    found = true;
             }
         }
         if (!found)
@@ -928,47 +910,29 @@ public:
             TaxiNodesEntry const* nodeEntry = sTaxiNodesStore.LookupEntry(id);
             if (nodeEntry)
             {
-                int locale = handler->GetSessionDbcLocale();
-                std::string name = nodeEntry->name[locale];
+                std::string name = nodeEntry->name;
                 if (name.empty())
                     continue;
 
                 if (!Utf8FitTo(name, wNamePart))
+                    continue;
+
+                if (maxResults && count++ == maxResults)
                 {
-                    locale = 0;
-                    for (; locale < TOTAL_LOCALES; ++locale)
-                    {
-                        if (locale == handler->GetSessionDbcLocale())
-                            continue;
-
-                        name = nodeEntry->name[locale];
-                        if (name.empty())
-                            continue;
-
-                        if (Utf8FitTo(name, wNamePart))
-                            break;
-                    }
+                    handler->PSendSysMessage(LANG_COMMAND_LOOKUP_MAX_RESULTS, maxResults);
+                    return true;
                 }
 
-                if (locale < TOTAL_LOCALES)
-                {
-                    if (maxResults && count++ == maxResults)
-                    {
-                        handler->PSendSysMessage(LANG_COMMAND_LOOKUP_MAX_RESULTS, maxResults);
-                        return true;
-                    }
+                // send taxinode in "id - [name] (Map:m X:x Y:y Z:z)" format
+                if (handler->GetSession())
+                    handler->PSendSysMessage(LANG_TAXINODE_ENTRY_LIST_CHAT, id, id, name.c_str(), localeNames[locale],
+                        nodeEntry->map_id, nodeEntry->x, nodeEntry->y, nodeEntry->z);
+                else
+                    handler->PSendSysMessage(LANG_TAXINODE_ENTRY_LIST_CONSOLE, id, name.c_str(), localeNames[locale],
+                        nodeEntry->map_id, nodeEntry->x, nodeEntry->y, nodeEntry->z);
 
-                    // send taxinode in "id - [name] (Map:m X:x Y:y Z:z)" format
-                    if (handler->GetSession())
-                        handler->PSendSysMessage(LANG_TAXINODE_ENTRY_LIST_CHAT, id, id, name.c_str(), localeNames[locale],
-                            nodeEntry->map_id, nodeEntry->x, nodeEntry->y, nodeEntry->z);
-                    else
-                        handler->PSendSysMessage(LANG_TAXINODE_ENTRY_LIST_CONSOLE, id, name.c_str(), localeNames[locale],
-                            nodeEntry->map_id, nodeEntry->x, nodeEntry->y, nodeEntry->z);
-
-                    if (!found)
-                        found = true;
-                }
+                if (!found)
+                    found = true;
             }
         }
         if (!found)
@@ -1065,53 +1029,35 @@ public:
             CharTitlesEntry const* titleInfo = sCharTitlesStore.LookupEntry(id);
             if (titleInfo)
             {
-                int locale = handler->GetSessionDbcLocale();
-                std::string name = titleInfo->name[locale];
+                std::string name = titleInfo->name;
                 if (name.empty())
                     continue;
 
                 if (!Utf8FitTo(name, wNamePart))
+                    continue;
+
+                if (maxResults && counter == maxResults)
                 {
-                    locale = 0;
-                    for (; locale < TOTAL_LOCALES; ++locale)
-                    {
-                        if (locale == handler->GetSessionDbcLocale())
-                            continue;
-
-                        name = titleInfo->name[locale];
-                        if (name.empty())
-                            continue;
-
-                        if (Utf8FitTo(name, wNamePart))
-                            break;
-                    }
+                    handler->PSendSysMessage(LANG_COMMAND_LOOKUP_MAX_RESULTS, maxResults);
+                    return true;
                 }
 
-                if (locale < TOTAL_LOCALES)
-                {
-                    if (maxResults && counter == maxResults)
-                    {
-                        handler->PSendSysMessage(LANG_COMMAND_LOOKUP_MAX_RESULTS, maxResults);
-                        return true;
-                    }
+                char const* knownStr = target && target->HasTitle(titleInfo) ? handler->GetTrinityString(LANG_KNOWN) : "";
 
-                    char const* knownStr = target && target->HasTitle(titleInfo) ? handler->GetTrinityString(LANG_KNOWN) : "";
+                char const* activeStr = target && target->GetUInt32Value(PLAYER_CHOSEN_TITLE) == titleInfo->bit_index
+                    ? handler->GetTrinityString(LANG_ACTIVE)
+                    : "";
 
-                    char const* activeStr = target && target->GetUInt32Value(PLAYER_CHOSEN_TITLE) == titleInfo->bit_index
-                        ? handler->GetTrinityString(LANG_ACTIVE)
-                        : "";
+                char titleNameStr[80];
+                snprintf(titleNameStr, 80, name.c_str(), targetName);
 
-                    char titleNameStr[80];
-                    snprintf(titleNameStr, 80, name.c_str(), targetName);
+                // send title in "id (idx:idx) - [namedlink locale]" format
+                if (handler->GetSession())
+                    handler->PSendSysMessage(LANG_TITLE_LIST_CHAT, id, titleInfo->bit_index, id, titleNameStr, localeNames[locale], knownStr, activeStr);
+                else
+                    handler->PSendSysMessage(LANG_TITLE_LIST_CONSOLE, id, titleInfo->bit_index, titleNameStr, localeNames[locale], knownStr, activeStr);
 
-                    // send title in "id (idx:idx) - [namedlink locale]" format
-                    if (handler->GetSession())
-                        handler->PSendSysMessage(LANG_TITLE_LIST_CHAT, id, titleInfo->bit_index, id, titleNameStr, localeNames[locale], knownStr, activeStr);
-                    else
-                        handler->PSendSysMessage(LANG_TITLE_LIST_CONSOLE, id, titleInfo->bit_index, titleNameStr, localeNames[locale], knownStr, activeStr);
-
-                    ++counter;
-                }
+                ++counter;
             }
         }
         if (counter == 0)  // if counter == 0 then we found nth

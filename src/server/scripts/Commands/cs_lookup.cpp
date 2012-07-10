@@ -94,48 +94,30 @@ public:
             AreaTableEntry const* areaEntry = sAreaStore.LookupEntry(areaflag);
             if (areaEntry)
             {
-                int locale = handler->GetSessionDbcLocale();
-                std::string name = areaEntry->area_name[locale];
+                std::string name = areaEntry->area_name;
                 if (name.empty())
                     continue;
 
                 if (!Utf8FitTo(name, wNamePart))
+                    continue;
+
+                if (maxResults && count++ == maxResults)
                 {
-                    locale = 0;
-                    for (; locale < TOTAL_LOCALES; ++locale)
-                    {
-                        if (locale == handler->GetSessionDbcLocale())
-                            continue;
-
-                        name = areaEntry->area_name[locale];
-                        if (name.empty())
-                            continue;
-
-                        if (Utf8FitTo(name, wNamePart))
-                            break;
-                    }
+                    handler->PSendSysMessage(LANG_COMMAND_LOOKUP_MAX_RESULTS, maxResults);
+                    return true;
                 }
 
-                if (locale < TOTAL_LOCALES)
-                {
-                    if (maxResults && count++ == maxResults)
-                    {
-                        handler->PSendSysMessage(LANG_COMMAND_LOOKUP_MAX_RESULTS, maxResults);
-                        return true;
-                    }
+                // send area in "id - [name]" format
+                std::ostringstream ss;
+                if (handler->GetSession())
+                    ss << areaEntry->ID << " - |cffffffff|Harea:" << areaEntry->ID << "|h[" << name << ' ' << localeNames[locale]<< "]|h|r";
+                else
+                    ss << areaEntry->ID << " - " << name << ' ' << localeNames[locale];
 
-                    // send area in "id - [name]" format
-                    std::ostringstream ss;
-                    if (handler->GetSession())
-                        ss << areaEntry->ID << " - |cffffffff|Harea:" << areaEntry->ID << "|h[" << name << ' ' << localeNames[locale]<< "]|h|r";
-                    else
-                        ss << areaEntry->ID << " - " << name << ' ' << localeNames[locale];
+                handler->SendSysMessage(ss.str().c_str());
 
-                    handler->SendSysMessage(ss.str().c_str());
-
-                    if (!found)
-                        found = true;
-                }
+                if (!found)
+                    found = true;
             }
         }
 

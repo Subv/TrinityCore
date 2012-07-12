@@ -6,5 +6,4 @@ ALTER TABLE `characters` DROP COLUMN `ammoId`;
 ALTER TABLE `characters` DROP COLUMN `knownCurrencies`;
 ALTER TABLE `characters` ADD COLUMN `guildId` int unsigned not null default 0;
 
-DROP TABLE `player_classlevelstats`;
 ALTER TABLE `corpse` DROP COLUMN `guildId`;

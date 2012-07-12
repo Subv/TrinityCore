@@ -830,8 +830,8 @@ void InitOpcodeTable()
     OPCODE( SMSG_INSTANCE_DIFFICULTY,                     STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
     // OPCODE( MSG_GM_RESETINSTANCELIMIT,                    STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_NULL                     );
     OPCODE( SMSG_MOTD,                                    STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
-    // OPCODE( SMSG_MOVE_SET_FLIGHT,                         STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
-    // OPCODE( SMSG_MOVE_UNSET_FLIGHT,                       STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
+    // OPCODE( SMSG_MOVE_SET_CAN_TRANSITION_BETWEEN_SWIM_AND_FLY, STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
+    // OPCODE( SMSG_MOVE_UNSET_CAN_TRANSITION_BETWEEN_SWIM_AND_FLY   STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_ServerSide               );
     // OPCODE( CMSG_MOVE_FLIGHT_ACK,                         STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_NULL                     );
     // OPCODE( MSG_MOVE_START_SWIM_CHEAT,                    STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_NULL                     );
     // OPCODE( MSG_MOVE_STOP_SWIM_CHEAT,                     STATUS_NEVER,    PROCESS_INPLACE,       &WorldSession::Handle_NULL                     );

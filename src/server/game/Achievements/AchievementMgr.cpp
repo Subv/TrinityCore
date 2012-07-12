@@ -668,6 +668,11 @@ void AchievementMgr<Guild>::LoadFromDB(PreparedQueryResult achievementResult, Pr
 template<class T>
 void AchievementMgr<T>::Reset()
 {
+}
+
+template<>
+void AchievementMgr<Player>::Reset()
+{
     for (CompletedAchievementMap::const_iterator iter = m_completedAchievements.begin(); iter != m_completedAchievements.end(); ++iter)
     {
         WorldPacket data(SMSG_ACHIEVEMENT_DELETED, 4);
@@ -687,7 +692,7 @@ void AchievementMgr<T>::Reset()
     DeleteFromDB(_owner->GetGUIDLow());
 
     // re-fill data
-    CheckAllAchievementCriteria();
+    CheckAllAchievementCriteria(GetOwner());
 }
 
 template<>
@@ -708,9 +713,6 @@ void AchievementMgr<Guild>::Reset()
 
     m_completedAchievements.clear();
     DeleteFromDB(_owner->GetId());
-
-    // re-fill data
-    CheckAllAchievementCriteria();
 }
 
 template<class T>
@@ -819,11 +821,11 @@ void AchievementMgr<Guild>::SendCriteriaUpdate(AchievementCriteriaEntry const* e
  * called at player login. The player might have fulfilled some achievements when the achievement system wasn't working yet
  */
 template<class T>
-void AchievementMgr<T>::CheckAllAchievementCriteria()
+void AchievementMgr<T>::CheckAllAchievementCriteria(Player* referencePlayer)
 {
     // suppress sending packets
-    for (uint32 i=0; i<ACHIEVEMENT_CRITERIA_TYPE_TOTAL; ++i)
-        UpdateAchievementCriteria(AchievementCriteriaTypes(i));
+    for (uint32 i = 0; i < ACHIEVEMENT_CRITERIA_TYPE_TOTAL; ++i)
+        UpdateAchievementCriteria(AchievementCriteriaTypes(i), 0, 0, NULL, referencePlayer);
 }
 
 static const uint32 achievIdByArenaSlot[MAX_ARENA_SLOT] = { 1057, 1107, 1108 };

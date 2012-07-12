@@ -158,7 +158,10 @@ void ArenaTeamMgr::DistributeArenaPoints()
     // Cycle that gives points to all players
     for (std::map<uint32, uint32>::iterator playerItr = PlayerPoints.begin(); playerItr != PlayerPoints.end(); ++playerItr)
     {
+        
         // Add points to player if online
+        // ToDo: Cataclysm system
+        /*
         if (Player* player = HashMapHolder<Player>::Find(playerItr->first))
             player->ModifyArenaPoints(playerItr->second, &trans);
         else    // Update database
@@ -167,7 +170,7 @@ void ArenaTeamMgr::DistributeArenaPoints()
             stmt->setUInt32(0, playerItr->second);
             stmt->setUInt32(1, playerItr->first);
             trans->Append(stmt);
-        }
+        }*/
     }
 
     CharacterDatabase.CommitTransaction(trans);

@@ -284,16 +284,19 @@ void Player::UpdateAttackPowerAndDamage(bool ranged)
     float val2 = 0.0f;
     float level = float(getLevel());
 
-    UnitMods unitMod = ranged ? UNIT_MOD_ATTACK_POWER_RANGED : UNIT_MOD_ATTACK_POWER;
+    UnitMods unitMod_pos = ranged ? UNIT_MOD_ATTACK_POWER_RANGED_POS : UNIT_MOD_ATTACK_POWER_POS;
+    UnitMods unitMod_neg = ranged ? UNIT_MOD_ATTACK_POWER_RANGED_NEG : UNIT_MOD_ATTACK_POWER_NEG;
 
     uint16 index = UNIT_FIELD_ATTACK_POWER;
-    uint16 index_mod = UNIT_FIELD_ATTACK_POWER_MODS;
+    uint16 index_mod_pos = UNIT_FIELD_ATTACK_POWER_MOD_POS;
+    uint16 index_mod_neg = UNIT_FIELD_ATTACK_POWER_MOD_NEG;
     uint16 index_mult = UNIT_FIELD_ATTACK_POWER_MULTIPLIER;
 
     if (ranged)
     {
         index = UNIT_FIELD_RANGED_ATTACK_POWER;
-        index_mod = UNIT_FIELD_RANGED_ATTACK_POWER_MODS;
+        index_mod_pos = UNIT_FIELD_RANGED_ATTACK_POWER_MOD_POS;
+        index_mod_neg = UNIT_FIELD_RANGED_ATTACK_POWER_MOD_NEG;
         index_mult = UNIT_FIELD_RANGED_ATTACK_POWER_MULTIPLIER;
 
         switch (getClass())
@@ -409,10 +412,11 @@ void Player::UpdateAttackPowerAndDamage(bool ranged)
         }
     }
 
-    SetModifierValue(unitMod, BASE_VALUE, val2);
+    SetModifierValue(unitMod_pos, BASE_VALUE, val2);
 
-    float base_attPower  = GetModifierValue(unitMod, BASE_VALUE) * GetModifierValue(unitMod, BASE_PCT);
-    float attPowerMod = GetModifierValue(unitMod, TOTAL_VALUE);
+    float base_attPower  = (GetModifierValue(unitMod_pos, BASE_VALUE) - GetModifierValue(unitMod_neg, BASE_VALUE)) * (GetModifierValue(unitMod_pos, BASE_PCT) + (1 - GetModifierValue(unitMod_neg, BASE_PCT)));
+    float attPowerMod_pos = GetModifierValue(unitMod_pos, TOTAL_VALUE);
+    float attPowerMod_neg = GetModifierValue(unitMod_neg, TOTAL_VALUE);
 
     //add dynamic flat mods
     if (ranged)
@@ -421,26 +425,45 @@ void Player::UpdateAttackPowerAndDamage(bool ranged)
         {
             AuraEffectList const& mRAPbyStat = GetAuraEffectsByType(SPELL_AURA_MOD_RANGED_ATTACK_POWER_OF_STAT_PERCENT);
             for (AuraEffectList::const_iterator i = mRAPbyStat.begin(); i != mRAPbyStat.end(); ++i)
-                attPowerMod += CalculatePctN(GetStat(Stats((*i)->GetMiscValue())), (*i)->GetAmount());
+            {
+                int32 value = CalculatePctN(GetStat(Stats((*i)->GetMiscValue())), (*i)->GetAmount());
+                if (value > 0)
+                    attPowerMod_pos += value;
+                else
+                    attPowerMod_pos -= value;
+            }
         }
     }
     else
     {
         AuraEffectList const& mAPbyStat = GetAuraEffectsByType(SPELL_AURA_MOD_ATTACK_POWER_OF_STAT_PERCENT);
         for (AuraEffectList::const_iterator i = mAPbyStat.begin(); i != mAPbyStat.end(); ++i)
-            attPowerMod += CalculatePctN(GetStat(Stats((*i)->GetMiscValue())), (*i)->GetAmount());
+        {
+            int32 value = CalculatePctN(GetStat(Stats((*i)->GetMiscValue())), (*i)->GetAmount());
+            if (value > 0)
+                attPowerMod_pos += value;
+            else
+                attPowerMod_pos -= value;
+        }
 
         AuraEffectList const& mAPbyArmor = GetAuraEffectsByType(SPELL_AURA_MOD_ATTACK_POWER_OF_ARMOR);
         for (AuraEffectList::const_iterator iter = mAPbyArmor.begin(); iter != mAPbyArmor.end(); ++iter)
+        {
             // always: ((*i)->GetModifier()->m_miscvalue == 1 == SPELL_SCHOOL_MASK_NORMAL)
-            attPowerMod += int32(GetArmor() / (*iter)->GetAmount());
+            int32 value = int32(GetArmor() / (*iter)->GetAmount());
+            if (value > 0)
+                attPowerMod_pos += value;
+            else
+                attPowerMod_pos -= value;
+        }
     }
 
-    float attPowerMultiplier = GetModifierValue(unitMod, TOTAL_PCT) - 1.0f;
+    float attPowerMultiplier = (GetModifierValue(unitMod_pos, TOTAL_PCT) + (1 - GetModifierValue(unitMod_neg, TOTAL_PCT)))- 1.0f;
 
-    SetInt32Value(index, (uint32)base_attPower);            //UNIT_FIELD_(RANGED)_ATTACK_POWER field
-    SetInt32Value(index_mod, (uint32)attPowerMod);          //UNIT_FIELD_(RANGED)_ATTACK_POWER_MODS field
-    SetFloatValue(index_mult, attPowerMultiplier);          //UNIT_FIELD_(RANGED)_ATTACK_POWER_MULTIPLIER field
+    SetInt32Value(index, (uint32)base_attPower);                    //UNIT_FIELD_(RANGED)_ATTACK_POWER field
+    SetInt32Value(index_mod_pos, (uint32)attPowerMod_pos);          //UNIT_FIELD_(RANGED)_ATTACK_POWER_MOD_POS field
+    SetInt32Value(index_mod_neg, (uint32)attPowerMod_neg);          //UNIT_FIELD_(RANGED)_ATTACK_POWER_MOD_NEG field
+    SetFloatValue(index_mult, attPowerMultiplier);                  //UNIT_FIELD_(RANGED)_ATTACK_POWER_MULTIPLIER field
 
     Pet* pet = GetPet();                                //update pet's AP
     //automatically update weapon damage after attack power modification

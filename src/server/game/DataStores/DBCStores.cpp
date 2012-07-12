@@ -101,8 +101,6 @@ DBCStorage <GtChanceToMeleeCritEntry>     sGtChanceToMeleeCritStore(GtChanceToMe
 DBCStorage <GtChanceToSpellCritBaseEntry> sGtChanceToSpellCritBaseStore(GtChanceToSpellCritBasefmt);
 DBCStorage <GtChanceToSpellCritEntry>     sGtChanceToSpellCritStore(GtChanceToSpellCritfmt);
 DBCStorage <GtOCTClassCombatRatingScalarEntry> sGtOCTClassCombatRatingScalarStore(GtOCTClassCombatRatingScalarfmt);
-DBCStorage <GtOCTBaseHPByClassEntry>       sGtOCTBaseHPByClassStore(GtOCTBaseHPByClassfmt);
-DBCStorage <GtOCTBaseMPByClassEntry>       sGtOCTBaseMPByClassStore(GtOCTBaseMPByClassfmt);
 DBCStorage <GtOCTHPPerStaminaEntry>        sGtOCTHPPerStaminaStore(GtOCTHPPerStaminafmt);
 //DBCStorage <GtOCTRegenMPEntry>            sGtOCTRegenMPStore(GtOCTRegenMPfmt);  -- not used currently
 DBCStorage <GtRegenMPPerSptEntry>         sGtRegenMPPerSptStore(GtRegenMPPerSptfmt);
@@ -184,9 +182,11 @@ DBCStorage <SpellInterruptsEntry> sSpellInterruptsStore(SpellInterruptsfmt);
 DBCStorage <SpellEquippedItemsEntry> sSpellEquippedItemsStore(SpellEquippedItemsfmt);
 DBCStorage <SpellClassOptionsEntry> sSpellClassOptionsStore(SpellClassOptionsfmt);
 DBCStorage <SpellCooldownsEntry> sSpellCooldownsStore(SpellCooldownsfmt);
+DBCStorage <SpellEffectEntry> sSpellEffectStore(SpellEffectfmt);
 DBCStorage <SpellAuraOptionsEntry> sSpellAuraOptionsStore(SpellAuraOptionsfmt);
 DBCStorage <SpellAuraRestrictionsEntry> sSpellAuraRestrictionsStore(SpellAuraRestrictionsfmt);
 DBCStorage <SpellCastingRequirementsEntry> sSpellCastingRequirementsStore(SpellCastingRequirementsfmt);
+DBCStorage <SpellCategoriesEntry> sSpellCategoriesStore(SpellCategoriesfmt);
 
 SpellEffectMap sSpellEffectMap;
 SpellReagentMap sSpellReagentMap;
@@ -381,8 +381,6 @@ void LoadDBCStores(const std::string& dataPath)
     LoadDBC(availableDbcLocales, bad_dbc_files, sGtChanceToSpellCritBaseStore, dbcPath, "gtChanceToSpellCritBase.dbc");
     LoadDBC(availableDbcLocales, bad_dbc_files, sGtChanceToSpellCritStore,    dbcPath, "gtChanceToSpellCrit.dbc");
     LoadDBC(availableDbcLocales, bad_dbc_files, sGtOCTClassCombatRatingScalarStore,    dbcPath, "gtOCTClassCombatRatingScalar.dbc");
-    LoadDBC(availableDbcLocales, bad_dbc_files, sGtOCTBaseHPByClassStore, dbcPath, "gtOCTBaseHPByClass.dbc");
-    LoadDBC(availableDbcLocales, bad_dbc_files, sGtOCTBaseMPByClassStore, dbcPath, "gtOCTBaseMPByClass.dbc");
     LoadDBC(availableDbcLocales, bad_dbc_files, sGtOCTHPPerStaminaStore, dbcPath, "gtOCTHPPerStamina.dbc");
     LoadDBC(availableDbcLocales, bad_dbc_files, sGtSpellScalingStore, dbcPath, "gtSpellScaling.dbc");
     //LoadDBC(dbcCount, availableDbcLocales, bad_dbc_files, sGtOCTRegenMPStore,           dbcPath, "gtOCTRegenMP.dbc");       -- not used currently
@@ -474,7 +472,7 @@ void LoadDBCStores(const std::string& dataPath)
             sSpellEffectMap[spellEffect->EffectSpellId].effects[spellEffect->EffectIndex] = spellEffect;
     }
     LoadDBC(availableDbcLocales, bad_dbc_files, sSpellCastTimesStore,         dbcPath, "SpellCastTimes.dbc");
-    LoadDBC(availableDbcLocales, bad_dbc_files, sSpellDifficultyStore,        dbcPath, "SpellDifficulty.dbc", &CustomSpellDifficultyfmt, &CustomSpellDifficultyIndex);
+    LoadDBC(availableDbcLocales, bad_dbc_files, sSpellDifficultyStore,        dbcPath, "SpellDifficulty.dbc"/*, &CustomSpellDifficultyfmt, &CustomSpellDifficultyIndex*/);
     LoadDBC(availableDbcLocales, bad_dbc_files, sSpellDurationStore,          dbcPath, "SpellDuration.dbc");
     LoadDBC(availableDbcLocales, bad_dbc_files, sSpellFocusObjectStore,       dbcPath, "SpellFocusObject.dbc");
     LoadDBC(availableDbcLocales, bad_dbc_files, sSpellItemEnchantmentStore,   dbcPath, "SpellItemEnchantment.dbc");
@@ -899,3 +897,154 @@ uint32 GetLiquidFlags(uint32 liquidType)
     return 0;
 }
 
+uint32 ScalingStatValuesEntry::GetStatMultiplier(uint32 inventoryType) const
+{
+    if (inventoryType < MAX_INVTYPE)
+    {
+        switch (inventoryType)
+        {
+            case INVTYPE_NON_EQUIP:
+            case INVTYPE_BODY:
+            case INVTYPE_BAG:
+            case INVTYPE_TABARD:
+            case INVTYPE_AMMO:
+            case INVTYPE_QUIVER:
+                return 0;
+            case INVTYPE_HEAD:
+            case INVTYPE_CHEST:
+            case INVTYPE_LEGS:
+            case INVTYPE_2HWEAPON:
+            case INVTYPE_ROBE:
+                return StatMultiplier[0];
+            case INVTYPE_SHOULDERS:
+            case INVTYPE_WAIST:
+            case INVTYPE_FEET:
+            case INVTYPE_HANDS:
+            case INVTYPE_TRINKET:
+                return StatMultiplier[1];
+            case INVTYPE_NECK:
+            case INVTYPE_WRISTS:
+            case INVTYPE_FINGER:
+            case INVTYPE_SHIELD:
+            case INVTYPE_CLOAK:
+            case INVTYPE_HOLDABLE:
+                return StatMultiplier[2];
+            case INVTYPE_RANGED:
+            case INVTYPE_THROWN:
+            case INVTYPE_RANGEDRIGHT:
+            case INVTYPE_RELIC:
+                return StatMultiplier[3];
+            case INVTYPE_WEAPON:
+            case INVTYPE_WEAPONMAINHAND:
+            case INVTYPE_WEAPONOFFHAND:
+                return StatMultiplier[4];
+            default:
+                break;
+        }
+    }
+    return 0;
+}
+
+uint32 ScalingStatValuesEntry::GetArmor(uint32 inventoryType, uint32 armorType) const
+{
+    if (inventoryType <= INVTYPE_ROBE && armorType < 4)
+    {
+        switch (inventoryType)
+        {
+            case INVTYPE_NON_EQUIP:
+            case INVTYPE_NECK:
+            case INVTYPE_BODY:
+            case INVTYPE_FINGER:
+            case INVTYPE_TRINKET:
+            case INVTYPE_WEAPON:
+            case INVTYPE_SHIELD:
+            case INVTYPE_RANGED:
+            case INVTYPE_2HWEAPON:
+            case INVTYPE_BAG:
+            case INVTYPE_TABARD:
+                break;
+            case INVTYPE_SHOULDERS:
+                return Armor[0][armorType];
+            case INVTYPE_CHEST:
+            case INVTYPE_ROBE:
+                return Armor[1][armorType];
+            case INVTYPE_HEAD:
+                return Armor[2][armorType];
+            case INVTYPE_LEGS:
+                return Armor[3][armorType];
+            case INVTYPE_FEET:
+                return Armor[4][armorType];
+            case INVTYPE_WAIST:
+                return Armor[5][armorType];
+            case INVTYPE_HANDS:
+                return Armor[6][armorType];
+            case INVTYPE_WRISTS:
+                return Armor[7][armorType];
+            case INVTYPE_CLOAK:
+                return CloakArmor;
+            default:
+                break;
+        }
+    }
+    return 0;
+}
+
+uint32 ScalingStatValuesEntry::GetDPSAndDamageMultiplier(uint32 subClass, bool isCasterWeapon, float* damageMultiplier) const
+{
+    if (!isCasterWeapon)
+    {
+        switch (subClass)
+        {
+            case ITEM_SUBCLASS_WEAPON_AXE:
+            case ITEM_SUBCLASS_WEAPON_MACE:
+            case ITEM_SUBCLASS_WEAPON_SWORD:
+            case ITEM_SUBCLASS_WEAPON_DAGGER:
+            case ITEM_SUBCLASS_WEAPON_THROWN:
+                *damageMultiplier = 0.3f;
+                return dpsMod[0];
+            case ITEM_SUBCLASS_WEAPON_AXE2:
+            case ITEM_SUBCLASS_WEAPON_MACE2:
+            case ITEM_SUBCLASS_WEAPON_POLEARM:
+            case ITEM_SUBCLASS_WEAPON_SWORD2:
+            case ITEM_SUBCLASS_WEAPON_STAFF:
+            case ITEM_SUBCLASS_WEAPON_FISHING_POLE:
+                *damageMultiplier = 0.2f;
+                return dpsMod[1];
+            case ITEM_SUBCLASS_WEAPON_BOW:
+            case ITEM_SUBCLASS_WEAPON_GUN:
+            case ITEM_SUBCLASS_WEAPON_CROSSBOW:
+                *damageMultiplier = 0.3f;
+                return dpsMod[4];
+            case ITEM_SUBCLASS_WEAPON_Obsolete:
+            case ITEM_SUBCLASS_WEAPON_EXOTIC:
+            case ITEM_SUBCLASS_WEAPON_EXOTIC2:
+            case ITEM_SUBCLASS_WEAPON_FIST_WEAPON:
+            case ITEM_SUBCLASS_WEAPON_MISCELLANEOUS:
+            case ITEM_SUBCLASS_WEAPON_SPEAR:
+            case ITEM_SUBCLASS_WEAPON_WAND:
+                break;
+        }
+    }
+    else
+    {
+        if (subClass <= ITEM_SUBCLASS_WEAPON_WAND)
+        {
+            uint32 mask = 1 << subClass;
+            // two-handed weapons
+            if (mask & 0x562)
+            {
+                *damageMultiplier = 0.2f;
+                return dpsMod[3];
+            }
+
+            if (mask & (1 << ITEM_SUBCLASS_WEAPON_WAND))
+            {
+                *damageMultiplier = 0.3f;
+                return dpsMod[5];
+            }
+        }
+        *damageMultiplier = 0.3f;
+        return dpsMod[2];
+    }
+    return 0;
+}

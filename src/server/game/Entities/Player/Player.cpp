@@ -1006,8 +1006,6 @@ bool Player::Create(uint32 guidlow, CharacterCreateInfo* createInfo)
     InitRunes();
 
     SetUInt32Value(PLAYER_FIELD_COINAGE, sWorld->getIntConfig(CONFIG_START_PLAYER_MONEY));
-    SetHonorPoints(sWorld->getIntConfig(CONFIG_START_HONOR_POINTS));
-    SetArenaPoints(sWorld->getIntConfig(CONFIG_START_ARENA_POINTS));
 
     // start with every map explored
     if (sWorld->getBoolConfig(CONFIG_START_ALL_EXPLORED))
@@ -2988,20 +2986,15 @@ void Player::GiveLevel(uint8 level)
     PlayerLevelInfo info;
     sObjectMgr->GetPlayerLevelInfo(getRace(), getClass(), level, &info);
 
-    GtOCTBaseHPByClassEntry const* hpByClass = sGtOCTBaseHPByClassStore.LookupEntry((getClass()-1)*GT_MAX_LEVEL + level-1);
-    GtOCTBaseMPByClassEntry const* mpByClass = sGtOCTBaseMPByClassStore.LookupEntry((getClass()-1)*GT_MAX_LEVEL + level-1);
-    if (!hpByClass || !mpByClass)
-    {
-        sLog->outError("Player %s (Guid: %u) has invalid data for HealthPoints and ManaPoints by class (class: %u, level: %u)", GetName(), GetGUIDLow(), getClass(), level);
-        return;
-    }
+    PlayerClassLevelInfo classInfo;
+    sObjectMgr->GetPlayerClassLevelInfo(getClass(), level, &classInfo);
 
     // send levelup info to client
     WorldPacket data(SMSG_LEVELUP_INFO, (4+4+MAX_POWERS*4+MAX_STATS*4));
     data << uint32(level);
-    data << uint32(int32(hpByClass->value) - int32(GetCreateHealth()));
+    data << uint32(int32(classInfo.basehealth) - int32(GetCreateHealth()));
     // for (int i = 0; i < MAX_POWERS; ++i)                  // Powers loop (0-6)
-    data << uint32(int32(mpByClass->value)   - int32(GetCreateMana()));
+    data << uint32(int32(classInfo.basemana)   - int32(GetCreateMana()));
     data << uint32(0);
     data << uint32(0);
     data << uint32(0);
@@ -3029,8 +3022,8 @@ void Player::GiveLevel(uint8 level)
     for (uint8 i = STAT_STRENGTH; i < MAX_STATS; ++i)
         SetCreateStat(Stats(i), info.stats[i]);
 
-    SetCreateHealth(hpByClass->value);
-    SetCreateMana(mpByClass->value);
+    SetCreateHealth(classInfo.basehealth);
+    SetCreateMana(classInfo.basemana);
 
     InitTalentForLevel();
     InitTaxiNodesForLevel();
@@ -3125,17 +3118,12 @@ void Player::InitStatsForLevel(bool reapplyMods)
     if (reapplyMods)                                        //reapply stats values only on .reset stats (level) command
         _RemoveAllStatBonuses();
 
-    GtOCTBaseHPByClassEntry const* hpByClass = sGtOCTBaseHPByClassStore.LookupEntry((getClass()-1)*GT_MAX_LEVEL + getLevel()-1);
-    GtOCTBaseMPByClassEntry const* mpByClass = sGtOCTBaseMPByClassStore.LookupEntry((getClass()-1)*GT_MAX_LEVEL + getLevel()-1);
-    if (!hpByClass || !mpByClass)
-    {
-        sLog->outError("Player %s (Guid: %u) has invalid data for HealthPoints and ManaPoints by class (class: %u, level: %u)", GetName(), GetGUIDLow(), getClass(), getLevel());
-        return;
-    }
-
+    PlayerClassLevelInfo classInfo;
+    sObjectMgr->GetPlayerClassLevelInfo(getClass(), getLevel(), &classInfo);
+    
     PlayerLevelInfo info;
     sObjectMgr->GetPlayerLevelInfo(getRace(), getClass(), getLevel(), &info);
-
+    
     SetUInt32Value(PLAYER_FIELD_MAX_LEVEL, sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL));
     SetUInt32Value(PLAYER_NEXT_LEVEL_XP, sObjectMgr->GetXPForLevel(getLevel()));
 
@@ -3157,10 +3145,10 @@ void Player::InitStatsForLevel(bool reapplyMods)
     for (uint8 i = STAT_STRENGTH; i < MAX_STATS; ++i)
         SetStat(Stats(i), info.stats[i]);
 
-    SetCreateHealth(hpByClass->value);
+    SetCreateHealth(classInfo.basehealth);
 
     //set create powers
-    SetCreateMana(mpByClass->value);
+    SetCreateMana(classInfo.basemana);
 
     SetArmor(int32(m_createStats[STAT_AGILITY]*2));
 
@@ -3240,7 +3228,7 @@ void Player::InitStatsForLevel(bool reapplyMods)
     for (uint8 i = POWER_MANA; i < MAX_POWERS; ++i)
         SetMaxPower(Powers(i),  uint32(GetCreatePowers(Powers(i))));
 
-    SetMaxHealth(hpByClass->value);                     // stamina bonus will applied later
+    SetMaxHealth(classInfo.basehealth);                     // stamina bonus will applied later
 
     // cleanup mounted state (it will set correctly at aura loading if player saved at mount.
     SetUInt32Value(UNIT_FIELD_MOUNTDISPLAYID, 0);
@@ -7746,7 +7734,7 @@ void Player::_ApplyItemBonuses(ItemTemplate const* proto, uint8 slot, bool apply
     if (ssd && ssd_level > ssd->MaxLevel)
         ssd_level = ssd->MaxLevel;
 
-    ScalingStatValuesEntry const* ssv = proto->ScalingStatValue ? sScalingStatValuesStore.LookupEntry(ssd_level) : NULL;
+    ScalingStatValuesEntry const* ssv = ssd ? sScalingStatValuesStore.LookupEntry(ssd_level) : NULL;
     if (only_level_scale && !ssv)
         return;
 
@@ -7760,12 +7748,10 @@ void Player::_ApplyItemBonuses(ItemTemplate const* proto, uint8 slot, bool apply
             if (ssd->StatMod[i] < 0)
                 continue;
             statType = ssd->StatMod[i];
-            val = (ssv->getssdMultiplier(proto->ScalingStatValue) * ssd->Modifier[i]) / 10000;
+            val = (ssv->GetStatMultiplier(proto->InventoryType) * ssd->Modifier[i]) / 10000;
         }
         else
         {
-            if (i >= proto->StatsCount)
-                continue;
             statType = proto->ItemStat[i].ItemStatType;
             val = proto->ItemStat[i].ItemStatValue;
         }
@@ -7892,12 +7878,26 @@ void Player::_ApplyItemBonuses(ItemTemplate const* proto, uint8 slot, bool apply
                 ApplyRatingMod(CR_EXPERTISE, int32(val), apply);
                 break;
             case ITEM_MOD_ATTACK_POWER:
-                HandleStatModifier(UNIT_MOD_ATTACK_POWER, TOTAL_VALUE, float(val), apply);
-                HandleStatModifier(UNIT_MOD_ATTACK_POWER_RANGED, TOTAL_VALUE, float(val), apply);
+            {
+                UnitMods index = UNIT_MOD_ATTACK_POWER_POS;
+                UnitMods ranged_index = UNIT_MOD_ATTACK_POWER_RANGED_POS;
+                if (float(val) < 0.f)
+                {
+                    index = UNIT_MOD_ATTACK_POWER_NEG;
+                    ranged_index = UNIT_MOD_ATTACK_POWER_RANGED_NEG;
+                }
+                HandleStatModifier(index, TOTAL_VALUE, float(val), apply);
+                HandleStatModifier(ranged_index, TOTAL_VALUE, float(val) > 0.f ? float(val) : -float(val), apply);
                 break;
+            }
             case ITEM_MOD_RANGED_ATTACK_POWER:
-                HandleStatModifier(UNIT_MOD_ATTACK_POWER_RANGED, TOTAL_VALUE, float(val), apply);
+            {
+                UnitMods index = UNIT_MOD_ATTACK_POWER_RANGED_POS;
+                if (float(val) < 0.f)
+                    index = UNIT_MOD_ATTACK_POWER_RANGED_NEG;
+                HandleStatModifier(index, TOTAL_VALUE, float(val) > 0.f ? float(val) : -float(val), apply);
                 break;
+            }
 //            case ITEM_MOD_FERAL_ATTACK_POWER:
 //                ApplyFeralAPBonus(int32(val), apply);
 //                break;
@@ -7925,15 +7925,14 @@ void Player::_ApplyItemBonuses(ItemTemplate const* proto, uint8 slot, bool apply
     }
 
     // Apply Spell Power from ScalingStatValue if set
-    if (ssv)
-        if (int32 spellbonus = ssv->getSpellBonus(proto->ScalingStatValue))
+    if (ssv && proto->Flags2 & ITEM_FLAGS_EXTRA_CASTER_WEAPON)
+        if (int32 spellbonus = int32(ssv->Spellpower))
             ApplySpellPowerBonus(spellbonus, apply);
 
     // If set ScalingStatValue armor get it or use item armor
     uint32 armor = proto->Armor;
-    if (ssv)
-        if (uint32 ssvarmor = ssv->getArmorMod(proto->ScalingStatValue))
-            armor = ssvarmor;
+    if (ssv && proto->Class == ITEM_CLASS_ARMOR)
+        armor = ssv->GetArmor(proto->InventoryType, proto->SubClass - 1);
 
     if (armor)
     {
@@ -7973,23 +7972,6 @@ void Player::_ApplyItemBonuses(ItemTemplate const* proto, uint8 slot, bool apply
 
     if (CanUseAttackType(attType))
         _ApplyWeaponDamage(slot, proto, ssv, apply);
-
-
-    // Druids get feral AP bonus from weapon dps (also use DPS from ScalingStatValue)
-    if (getClass() == CLASS_DRUID)
-    {
-        int32 dpsMod = 0;
-        int32 feral_bonus = 0;
-        if (ssv)
-        {
-            dpsMod = ssv->getDPSMod(proto->ScalingStatValue);
-            feral_bonus += ssv->getFeralBonus(proto->ScalingStatValue);
-        }
-
-        feral_bonus += proto->getFeralBonus(dpsMod);
-        if (feral_bonus)
-            ApplyFeralAPBonus(feral_bonus, apply);
-    }
 }
 
 void Player::_ApplyWeaponDamage(uint8 slot, ItemTemplate const* proto, ScalingStatValuesEntry const* ssv, bool apply)
@@ -8008,18 +7990,19 @@ void Player::_ApplyWeaponDamage(uint8 slot, ItemTemplate const* proto, ScalingSt
         attType = OFF_ATTACK;
     }
 
-    float minDamage = proto->Damage[0].DamageMin;
-    float maxDamage = proto->Damage[0].DamageMax;
+    float minDamage = proto->DamageMin;
+    float maxDamage = proto->DamageMax;
 
     // If set dpsMod in ScalingStatValue use it for min (70% from average), max (130% from average) damage
     if (ssv)
     {
-        int32 extraDPS = ssv->getDPSMod(proto->ScalingStatValue);
+        float damageMultiplier = 0.0f;
+        int32 extraDPS = ssv->GetDPSAndDamageMultiplier(proto->SubClass, proto->Flags2 & ITEM_FLAGS_EXTRA_CASTER_WEAPON, &damageMultiplier);
         if (extraDPS)
         {
             float average = extraDPS * proto->Delay / 1000.0f;
-            minDamage = 0.7f * average;
-            maxDamage = 1.3f * average;
+            minDamage = (1.0f - damageMultiplier) * average;
+            maxDamage = (1.0f + damageMultiplier) * average;
         }
     }
 
@@ -12043,10 +12026,6 @@ Item* Player::_StoreItem(uint16 pos, Item* pItem, uint32 count, bool clone, bool
 
             pItem->SetSlot(slot);
             pItem->SetContainer(NULL);
-
-            // need update known currency
-            if (slot >= CURRENCYTOKEN_SLOT_START && slot < CURRENCYTOKEN_SLOT_END)
-                AddKnownCurrency(pItem->GetEntry());
         }
         else
             pBag->StoreItem(slot, pItem, update);
@@ -13855,14 +13834,28 @@ void Player::ApplyEnchantment(Item* item, EnchantmentSlot slot, bool apply, bool
                             sLog->outDebug(LOG_FILTER_PLAYER_ITEMS, "+ %u EXPERTISE", enchant_amount);
                             break;
                         case ITEM_MOD_ATTACK_POWER:
-                            HandleStatModifier(UNIT_MOD_ATTACK_POWER, TOTAL_VALUE, float(enchant_amount), apply);
-                            HandleStatModifier(UNIT_MOD_ATTACK_POWER_RANGED, TOTAL_VALUE, float(enchant_amount), apply);
+                        {
+                            UnitMods index = UNIT_MOD_ATTACK_POWER_POS;
+                            UnitMods ranged_index = UNIT_MOD_ATTACK_POWER_RANGED_POS;
+                            if (float(enchant_amount) < 0.f)
+                            {
+                                index = UNIT_MOD_ATTACK_POWER_NEG;
+                                ranged_index = UNIT_MOD_ATTACK_POWER_RANGED_NEG;
+                            }
+                            HandleStatModifier(index, TOTAL_VALUE, float(enchant_amount), apply);
+                            HandleStatModifier(ranged_index, TOTAL_VALUE, float(enchant_amount) > 0.f ? float(enchant_amount) : -float(enchant_amount), apply);
                             sLog->outDebug(LOG_FILTER_PLAYER_ITEMS, "+ %u ATTACK_POWER", enchant_amount);
                             break;
+                        }
                         case ITEM_MOD_RANGED_ATTACK_POWER:
-                            HandleStatModifier(UNIT_MOD_ATTACK_POWER_RANGED, TOTAL_VALUE, float(enchant_amount), apply);
+                        {
+                            UnitMods index = UNIT_MOD_ATTACK_POWER_RANGED_POS;
+                            if (float(enchant_amount) < 0.f)
+                                index = UNIT_MOD_ATTACK_POWER_RANGED_NEG;
+                            HandleStatModifier(index, TOTAL_VALUE, float(enchant_amount) > 0.f ? float(enchant_amount) : -float(enchant_amount), apply);
                             sLog->outDebug(LOG_FILTER_PLAYER_ITEMS, "+ %u RANGED_ATTACK_POWER", enchant_amount);
                             break;
+                        }
 //                        case ITEM_MOD_FERAL_ATTACK_POWER:
 //                            ApplyFeralAPBonus(enchant_amount, apply);
 //                            sLog->outDebug(LOG_FILTER_PLAYER_ITEMS, "+ %u FERAL_ATTACK_POWER", enchant_amount);
@@ -17180,7 +17173,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
 
     _LoadDeclinedNames(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADDECLINEDNAMES));
 
-    m_achievementMgr.CheckAllAchievementCriteria();
+    m_achievementMgr.CheckAllAchievementCriteria(this);
 
     _LoadEquipmentSets(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADEQUIPMENTSETS));
 
@@ -17876,8 +17869,8 @@ void Player::_LoadQuestStatusRewarded(PreparedQueryResult result)
                         SetTitle(titleEntry);
                 }
 
-+                if (uint32 talents = quest->GetBonusTalents())
-+                    AddQuestRewardedTalentCount(talents);
+                if (uint32 talents = quest->GetBonusTalents())
+                    AddQuestRewardedTalentCount(talents);
             }
 
             m_RewardedQuests.insert(quest_id);
@@ -18545,7 +18538,6 @@ void Player::SaveToDB(bool create /*=false*/)
         stmt->setUInt16(index++, GetUInt16Value(PLAYER_FIELD_KILLS, 0));
         stmt->setUInt16(index++, GetUInt16Value(PLAYER_FIELD_KILLS, 1));
         stmt->setUInt32(index++, GetUInt32Value(PLAYER_CHOSEN_TITLE));
-        stmt->setUInt64(index++, GetUInt64Value(PLAYER_FIELD_KNOWN_CURRENCIES));
         stmt->setUInt32(index++, GetUInt32Value(PLAYER_FIELD_WATCHED_FACTION_INDEX));
         stmt->setUInt16(index++, (uint16)(GetUInt32Value(PLAYER_BYTES_3) & 0xFFFE));
         stmt->setUInt32(index++, GetHealth());
@@ -20837,16 +20829,20 @@ inline bool Player::_StoreOrEquipNewItem(uint32 vendorslot, uint32 item, uint8 c
     if (crItem->ExtendedCost)                            // case for new honor system
     {
         ItemExtendedCostEntry const* iece = sItemExtendedCostStore.LookupEntry(crItem->ExtendedCost);
-        if (iece->reqhonorpoints)
-            ModifyHonorPoints(- int32(iece->reqhonorpoints * count));
-
-        if (iece->reqarenapoints)
-            ModifyArenaPoints(- int32(iece->reqarenapoints * count));
+        
+        // ToDo: Cataclysm system
+        /*
+        for (uint8 i = 0; i < MAX_EXTENDED_COST_CURRENCIES; ++i)
+        {
+            if (iece->RequiredCurrency[i])
+                ModifyCurrency(iece->RequiredCurrency[i], -iece->RequiredCurrencyCount[i]);
+        }
+        */
 
         for (uint8 i = 0; i < MAX_ITEM_EXTENDED_COST_REQUIREMENTS; ++i)
         {
-            if (iece->reqitem[i])
-                DestroyItemCount(iece->reqitem[i], (iece->reqitemcount[i] * count), true);
+            if (iece->RequiredItem[i])
+                DestroyItemCount(iece->RequiredItem[i], (iece->RequiredItemCount[i] * count), true);
         }
     }
 
@@ -20958,7 +20954,7 @@ bool Player::BuyItemFromVendorSlot(uint64 vendorguid, uint32 vendorslot, uint32 
         // item base price
         for (uint8 i = 0; i < MAX_ITEM_EXTENDED_COST_REQUIREMENTS; ++i)
         {
-            if (iece->reqitem[i] && !HasItemCount(iece->reqitem[i], (iece->reqitemcount[i] * count)))
+            if (iece->RequiredItem[i] && !HasItemCount(iece->RequiredItem[i], (iece->RequiredItemCount[i] * count)))
             {
                 SendEquipError(EQUIP_ERR_VENDOR_MISSING_TURNINS, NULL, NULL);
                 return false;
@@ -20966,7 +20962,7 @@ bool Player::BuyItemFromVendorSlot(uint64 vendorguid, uint32 vendorslot, uint32 
         }
 
         // check for personal arena rating requirement
-        if (GetMaxPersonalArenaRatingRequirement(iece->reqarenaslot) < iece->reqpersonalarenarating)
+        if (GetMaxPersonalArenaRatingRequirement(iece->RequiredArenaSlot) < iece->RequiredPersonalArenaRating)
         {
             // probably not the proper equip err
             SendEquipError(EQUIP_ERR_CANT_EQUIP_RANK, NULL, NULL);
@@ -23439,8 +23435,9 @@ void Player::InitGlyphsForLevel()
     uint32 slotMask = 0;
 
     if (level >= 25)
-        slotMask |= 0x01 | 0x02 | 0x40;    if (level >= 50)
-        value |= 0x04;
+        slotMask |= 0x01 | 0x02 | 0x40;    
+    if (level >= 50)
+        slotMask |= 0x04;
     if (level >= 50)
         slotMask |= 0x04 | 0x08 | 0x80;
     if (level >= 75)
@@ -24107,11 +24104,11 @@ bool Player::LearnTalent(uint32 talentId, uint32 talentRank)
 
     // we already have same or higher talent rank learned
     if (curtalent_maxrank >= (talentRank + 1))
-        return false;;
+        return false;
 
     // check if we have enough talent points
     if (CurTalentPoints < (talentRank - curtalent_maxrank + 1))
-        return false;;
+        return false;
 
     // Check if it requires another talent
     if (talentInfo->DependsOn > 0)
@@ -24126,7 +24123,7 @@ bool Player::LearnTalent(uint32 talentId, uint32 talentRank)
                         hasEnoughRank = true;
             }
             if (!hasEnoughRank)
-                return false;;
+                return false;
         }
     }
 
@@ -24178,7 +24175,7 @@ bool Player::LearnTalent(uint32 talentId, uint32 talentRank)
 
     // already known
     if (HasSpell(spellid))
-        return;
+        return false;
 
     // learn! (other talent ranks will unlearned at learning)
     learnSpell(spellid, false);
@@ -24335,12 +24332,6 @@ void Player::LearnPetTalent(uint64 petGuid, uint32 talentId, uint32 talentRank)
 
     // update free talent points
     pet->SetFreeTalentPoints(CurTalentPoints - (talentRank - curtalent_maxrank + 1));
-}
-
-void Player::AddKnownCurrency(uint32 itemId)
-{
-    if (CurrencyTypesEntry const* ctEntry = sCurrencyTypesStore.LookupEntry(itemId))
-        SetFlag64(PLAYER_FIELD_KNOWN_CURRENCIES, (1LL << (ctEntry->BitIndex-1)));
 }
 
 void Player::UpdateFallInformationIfNeed(MovementInfo const& minfo, uint16 opcode)
@@ -25173,12 +25164,12 @@ void Player::SendRefundInfo(Item* item)
     WorldPacket data(SMSG_ITEM_REFUND_INFO_RESPONSE, 8+4+4+4+4*4+4*4+4+4);
     data << uint64(item->GetGUID());                    // item guid
     data << uint32(item->GetPaidMoney());               // money cost
-    data << uint32(iece->reqhonorpoints);               // honor point cost
-    data << uint32(iece->reqarenapoints);               // arena point cost
+    //data << uint32(iece->reqhonorpoints);               // honor point cost
+    //data << uint32(iece->reqarenapoints);               // arena point cost
     for (uint8 i = 0; i < MAX_ITEM_EXTENDED_COST_REQUIREMENTS; ++i)                       // item cost data
     {
-        data << uint32(iece->reqitem[i]);
-        data << uint32(iece->reqitemcount[i]);
+        data << uint32(iece->RequiredItem[i]);
+        data << uint32(iece->RequiredItemCount[i]);
     }
     data << uint32(0);
     data << uint32(GetTotalPlayedTime() - item->GetPlayedTime());
@@ -25243,8 +25234,8 @@ void Player::RefundItem(Item* item)
     bool store_error = false;
     for (uint8 i = 0; i < MAX_ITEM_EXTENDED_COST_REQUIREMENTS; ++i)
     {
-        uint32 count = iece->reqitemcount[i];
-        uint32 itemid = iece->reqitem[i];
+        uint32 count = iece->RequiredItemCount[i];
+        uint32 itemid = iece->RequiredItem[i];
 
         if (count && itemid)
         {
@@ -25271,12 +25262,12 @@ void Player::RefundItem(Item* item)
     data << uint64(item->GetGUID());                    // item guid
     data << uint32(0);                                  // 0, or error code
     data << uint32(item->GetPaidMoney());               // money cost
-    data << uint32(iece->reqhonorpoints);               // honor point cost
-    data << uint32(iece->reqarenapoints);               // arena point cost
+    //data << uint32(iece->reqhonorpoints);               // honor point cost
+    //data << uint32(iece->reqarenapoints);               // arena point cost
     for (uint8 i = 0; i < MAX_ITEM_EXTENDED_COST_REQUIREMENTS; ++i) // item cost data
     {
-        data << uint32(iece->reqitem[i]);
-        data << uint32(iece->reqitemcount[i]);
+        data << uint32(iece->RequiredItem[i]);
+        data << uint32(iece->RequiredItemCount[i]);
     }
     GetSession()->SendPacket(&data);
 
@@ -25294,8 +25285,8 @@ void Player::RefundItem(Item* item)
     // Grant back extendedcost items
     for (uint8 i = 0; i < MAX_ITEM_EXTENDED_COST_REQUIREMENTS; ++i)
     {
-        uint32 count = iece->reqitemcount[i];
-        uint32 itemid = iece->reqitem[i];
+        uint32 count = iece->RequiredItemCount[i];
+        uint32 itemid = iece->RequiredItem[i];
         if (count && itemid)
         {
             ItemPosCountVec dest;
@@ -25311,12 +25302,12 @@ void Player::RefundItem(Item* item)
         ModifyMoney(moneyRefund); // Saved in SaveInventoryAndGoldToDB
 
     // Grant back Honor points
-    if (uint32 honorRefund = iece->reqhonorpoints)
-        ModifyHonorPoints(honorRefund, &trans);
+    //if (uint32 honorRefund = iece->reqhonorpoints)
+    //    ModifyHonorPoints(honorRefund, &trans);
 
     // Grant back Arena points
-    if (uint32 arenaRefund = iece->reqarenapoints)
-        ModifyArenaPoints(arenaRefund, &trans);
+    //if (uint32 arenaRefund = iece->reqarenapoints)
+    //    ModifyArenaPoints(arenaRefund, &trans);
 
     SaveInventoryAndGoldToDB(trans);
 

@@ -27,5 +27,3 @@ CREATE TABLE `guild_achievement_progress` (
   PRIMARY KEY (`guildId`,`criteria`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
-DELETE FROM `achievement_criteria_data` WHERE `type` IN (1, 2, 3, 5, 6, 7, 9, 12, 14, 19, 20, 21);

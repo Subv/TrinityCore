@@ -613,7 +613,7 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
 
                     if (Player* caster = m_caster->ToPlayer())
                     {
-                        // Add Ammo and Weapon damage plus RAP * 0.1
+                        // Add Weapon damage
                         if (Item* item = caster->GetWeaponForAttack(RANGED_ATTACK))
                         {
                             ItemTemplate const* weaponTemplate = item->GetTemplate();
@@ -623,7 +623,6 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                                 damage += int32(dmg_min);
                             else
                                 damage += irand(int32(dmg_min), int32(dmg_max));
-                            damage += int32(caster->GetAmmoDPS() * weaponTemplate->Delay * 0.001f);
                         }
                     }
                 }

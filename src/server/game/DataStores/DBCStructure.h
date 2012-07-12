@@ -796,7 +796,7 @@ struct CreatureModelDataEntry
 {
     uint32 Id;
     //uint32 Flags;
-    //char* ModelPath[16]
+    //char* ModelPath
     //uint32 Unk1;
     float Scale;                                             // Used in calculation of unit collision data
     //int32 Unk2
@@ -811,7 +811,7 @@ struct CreatureModelDataEntry
     //float CollisionWidth;
     float CollisionHeight;
     float MountHeight;                                       // Used in calculation of unit collision data when mounted
-    //float Unks[11]
+    //float Unks[14]
 };
 
 #define MAX_CREATURE_SPELL_DATA_SLOT 4
@@ -859,24 +859,29 @@ struct CurrencyTypesEntry
 struct DestructibleModelDataEntry
 {
     uint32  Id;
+    uint32  DamagedDisplayId;
     //uint32  DamagedUnk1;
     //uint32  DamagedUnk2;
-    uint32  DamagedDisplayId;
     //uint32  DamagedUnk3;
+    uint32  DestroyedDisplayId;
     //uint32  DestroyedUnk1;
     //uint32  DestroyedUnk2;
-    uint32  DestroyedDisplayId;
     //uint32  DestroyedUnk3;
+    //uint32  DestroyedUnk4;
+    uint32  RebuildingDisplayId;
     //uint32  RebuildingUnk1;
     //uint32  RebuildingUnk2;
-    uint32  RebuildingDisplayId;
     //uint32  RebuildingUnk3;
+    //uint32  RebuildingUnk4;
+    uint32  SmokeDisplayId;
     //uint32  SmokeUnk1;
     //uint32  SmokeUnk2;
-    uint32  SmokeDisplayId;
     //uint32  SmokeUnk3;
-    //uint32  Unk4;
-    //uint32  Unk5;
+    //uint32  SmokeUnk4;
+    //uint32  UnkDisplayid;
+    //uint32  Unk6;
+    //uint32  Unk7;
+    //uint32  Unk8;
 };
 
 struct DungeonEncounterEntry
@@ -1082,19 +1087,6 @@ struct GtOCTClassCombatRatingScalarEntry
 {
     float ratio;
 };
-
-struct GtOCTBaseHPByClassEntry
-{
-    //uint32 level;
-    float value;
-};
-
-struct GtOCTBaseMPByClassEntry
-{
-    //uint32 level;
-    float value;
-};
-
 
 //! TODO: implement in float Player::GetHealthBonusFromStamina()
 struct GtOCTHPPerStaminaEntry
@@ -1528,69 +1520,17 @@ struct ScalingStatDistributionEntry
 
 struct ScalingStatValuesEntry
 {
-    uint32 Id;                                             // 0
-    uint32 Level;                                          // 1
-    uint32 dpsMod[6];                                      // 2-7 DPS mod for level
-    uint32 spellBonus;                                     // 8 spell power for level
-    uint32 ssdMultiplier[5];                               // 9-13 Multiplier for ScalingStatDistribution
-    uint32 armorMod[4];                                    // 14-17 Armor for level
-    uint32 armorMod2[4];                                   // 18-21 Armor for level
-    //uint32 trash[24];                                    // 22-45
-    //uint32 unk2;                                         // 46 unk, probably also Armor for level (flag 0x80000?)
-
-    uint32 getssdMultiplier(uint32 mask) const
-    {
-        if (mask & 0x4001F)
-        {
-            if (mask & 0x00000001) return ssdMultiplier[1];
-            if (mask & 0x00000002) return ssdMultiplier[2]; // 0 and 1 were duplicated
-            if (mask & 0x00000004) return ssdMultiplier[3];
-            if (mask & 0x00000008) return ssdMultiplier[0];
-            if (mask & 0x00000010) return ssdMultiplier[4];
-            if (mask & 0x00040000) return ssdMultiplier[2]; // 4.0.0
-        }
-        return 0;
-    }
-
-    uint32 getArmorMod(uint32 mask) const
-    {
-        if (mask & 0x00F001E0)
-        {
-            if (mask & 0x00000020) return armorMod[0];
-            if (mask & 0x00000040) return armorMod[1];
-            if (mask & 0x00000080) return armorMod[2];
-            if (mask & 0x00000100) return armorMod[3];
-
-            if (mask & 0x00100000) return armorMod2[0];      // cloth
-            if (mask & 0x00200000) return armorMod2[1];      // leather
-            if (mask & 0x00400000) return armorMod2[2];      // mail
-            if (mask & 0x00800000) return armorMod2[3];      // plate
-        }
-        return 0;
-    }
-    uint32 getDPSMod(uint32 mask) const
-    {
-        if (mask&0x7E00)
-        {
-            if (mask & 0x00000200) return dpsMod[0];
-            if (mask & 0x00000400) return dpsMod[1];
-            if (mask & 0x00000800) return dpsMod[2];
-            if (mask & 0x00001000) return dpsMod[3];
-            if (mask & 0x00002000) return dpsMod[4];
-            if (mask & 0x00004000) return dpsMod[5];         // not used?
-        }
-        return 0;
-    }
-    uint32 getSpellBonus(uint32 mask) const
-    {
-        if (mask & 0x00008000) return spellBonus;
-        return 0;
-    }
-    uint32 getFeralBonus(uint32 mask) const                 // removed in 3.2.x?
-    {
-        if (mask & 0x00010000) return 0;                    // not used?
-        return 0;
-    }
+    uint32 Id;                                              // 0
+    uint32 Level;                                           // 1
+    uint32 dpsMod[6];                                       // 2-7 DPS mod for level
+    uint32 Spellpower;                                      // 8 spell power for level
+    uint32 StatMultiplier[5];                               // 9-13 Multiplier for ScalingStatDistribution
+    uint32 Armor[8][4];                                     // 14-46 Armor for level
+    uint32 CloakArmor;                                      // 47 armor for cloak
+    
+    uint32 GetStatMultiplier(uint32 inventoryType) const;
+    uint32 GetArmor(uint32 inventoryType, uint32 armorType) const;
+    uint32 GetDPSAndDamageMultiplier(uint32 subClass, bool isCasterWeapon, float* damageMultiplier) const;
 };
 
 //struct SkillLineCategoryEntry{

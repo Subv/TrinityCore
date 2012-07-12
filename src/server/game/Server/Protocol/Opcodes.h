@@ -842,8 +842,8 @@ enum Opcodes
     SMSG_INSTANCE_DIFFICULTY                         = 0x0FFE4, // 4.0.6a 13623
     MSG_GM_RESETINSTANCELIMIT                        = 0x1012F, // Unknown opcode ID
     SMSG_MOTD                                        = 0x077C0, // 4.0.6a 13623
-    SMSG_MOVE_SET_FLIGHT                             = 0x0C57F, // 4.0.3a 13329 - 403
-    SMSG_MOVE_UNSET_FLIGHT                           = 0x0BDA0, // 4.0.6a 13623   Not sure.
+    SMSG_MOVE_SET_CAN_TRANSITION_BETWEEN_SWIM_AND_FLY   = 0x0C57F, // 4.0.3a 13329 - 403
+    SMSG_MOVE_UNSET_CAN_TRANSITION_BETWEEN_SWIM_AND_FLY = 0x0BDA0, // 4.0.6a 13623   Not sure.
     CMSG_MOVE_FLIGHT_ACK                             = 0x0A3C8, // 4.0.6a 13623
     MSG_MOVE_START_SWIM_CHEAT                        = 0x026C0, // 4.0.6a 13623
     MSG_MOVE_STOP_SWIM_CHEAT                         = 0x06988, // 4.0.6a 13623

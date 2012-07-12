@@ -877,8 +877,9 @@ void Battleground::EndBattleground(uint32 winner)
             if (IsRandom() || BattlegroundMgr::IsBGWeekend(GetTypeID()))
             {
                 UpdatePlayerScore(player, SCORE_BONUS_HONOR, GetBonusHonorFromKill(winner_kills));
-                if (CanAwardArenaPoints())
-                    player->ModifyArenaPoints(winner_arena);
+                // ToDo: Cataclysm system
+                /*if (CanAwardArenaPoints())
+                    player->ModifyArenaPoints(winner_arena);*/
                 if (!player->GetRandomWinner())
                     player->SetRandomWinner(true);
             }

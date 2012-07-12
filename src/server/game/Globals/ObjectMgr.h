@@ -655,6 +655,14 @@ class ObjectMgr
             return info;
         }
 
+        PlayerClassInfo const* GetPlayerClassInfo(uint32 class_) const
+        {
+            if (class_ >= MAX_CLASSES)
+                return NULL;
+            return &_playerClassInfo[class_];
+        }
+        
+        void GetPlayerClassLevelInfo(uint32 class_, uint8 level, PlayerClassLevelInfo* info) const;
         void GetPlayerLevelInfo(uint32 race, uint32 class_, uint8 level, PlayerLevelInfo* info) const;
 
         uint64 GetPlayerGUIDByName(std::string name) const;
@@ -1222,6 +1230,8 @@ class ObjectMgr
         typedef std::map<uint32, PetLevelInfo*> PetLevelInfoContainer;
         // PetLevelInfoContainer[creature_id][level]
         PetLevelInfoContainer _petInfoStore;                            // [creature_id][level]
+        
+        PlayerClassInfo _playerClassInfo[MAX_CLASSES];
 
         void BuildPlayerLevelInfo(uint8 race, uint8 class_, uint8 level, PlayerLevelInfo* plinfo) const;
 

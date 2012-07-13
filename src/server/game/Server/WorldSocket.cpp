@@ -478,7 +478,7 @@ int WorldSocket::handle_input_header (void)
     EndianConvertReverse(header.size);
     EndianConvert(header.cmd);
 
-    if ((header.size < 4) || (header.size > 10240) || (header.cmd  > 10240))
+    if ((header.size < 4) || (header.size > 0xFFFF) || (header.cmd  > 0xFFFF))
     {
         Player* _player = m_Session ? m_Session->GetPlayer() : NULL;
         sLog->outError("WorldSocket::handle_input_header(): client (account: %u, char [GUID: %u, name: %s]) sent malformed packet (size: %d, cmd: %d)",
@@ -752,22 +752,35 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
     BigNumber v, s, g, N, k;
     WorldPacket packet;
 
-    recvPacket.read(digest, 7);
+    recvPacket >> digest[14];
+    recvPacket >> digest[7];
+    recvPacket >> digest[16];
+    recvPacket >> digest[9];
+    recvPacket >> digest[4];
+    recvPacket >> digest[5];
+    recvPacket >> digest[15];
     recvPacket.read_skip<uint32>();
-    recvPacket.read(digest, 1);
+    recvPacket >> digest[18];
     recvPacket.read_skip<uint64>();
     recvPacket.read_skip<uint32>();
-    recvPacket.read(digest, 1);
+    recvPacket >> digest[13];
     recvPacket.read_skip<uint8>();
-    recvPacket.read(digest, 2);
+    recvPacket >> digest[10];
+    recvPacket >> digest[6];
     recvPacket >> clientSeed;
     recvPacket.read_skip<uint32>();
-    recvPacket.read(digest, 6);
+    recvPacket >> digest[19];
+    recvPacket >> digest[11];
+    recvPacket >> digest[17];
+    recvPacket >> digest[8];
+    recvPacket >> digest[12];
+    recvPacket >> digest[0];
     recvPacket >> clientBuild;
-    recvPacket.read(digest, 1);
+    recvPacket >> digest[3];
     recvPacket.read_skip<uint8>();
     recvPacket.read_skip<uint32>();
-    recvPacket.read(digest, 2);
+    recvPacket >> digest[1];
+    recvPacket >> digest[2];
 
     recvPacket >> m_addonSize;
     WorldPacket packetAddon;

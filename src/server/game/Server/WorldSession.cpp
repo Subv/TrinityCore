@@ -254,7 +254,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
             !_recvQueue.empty() && _recvQueue.peek(true) != firstDelayedPacket &&
             _recvQueue.next(packet, updater))
     {
-        if (packet->GetOpcode() >= NUM_MSG_TYPES)
+        if (packet->GetOpcode() == NULL_OPCODE)
         {
             sLog->outError("SESSION: received non-existed opcode %s (0x%.4X)", LookupOpcodeName(packet->GetOpcode()), packet->GetOpcode());
             sScriptMgr->OnUnknownPacketReceive(m_Socket, WorldPacket(*packet));

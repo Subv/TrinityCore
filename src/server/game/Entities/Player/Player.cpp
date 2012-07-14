@@ -16866,11 +16866,9 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
             SetArenaTeamInfoField(arena_slot, ArenaTeamInfoType(j), 0);
     }
 
-    SetCurrency(CURRENCY_TYPE_CONQUEST_POINTS, fields[40].GetUInt32());
-    SetCurrency(CURRENCY_TYPE_HONOR_POINTS, fields[41].GetUInt32());
-    SetUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS, fields[42].GetUInt32());
-    SetUInt16Value(PLAYER_FIELD_KILLS, 0, fields[43].GetUInt16());
-    SetUInt16Value(PLAYER_FIELD_KILLS, 1, fields[44].GetUInt16());
+    SetUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS, fields[40].GetUInt32());
+    SetUInt16Value(PLAYER_FIELD_KILLS, 0, fields[41].GetUInt16());
+    SetUInt16Value(PLAYER_FIELD_KILLS, 1, fields[42].GetUInt16());
 
     _LoadBoundInstances(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADBOUNDINSTANCES));
     _LoadInstanceTimeRestrictions(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADINSTANCELOCKTIMES));
@@ -17191,8 +17189,8 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     //mails are loaded only when needed ;-) - when player in game click on mailbox.
     //_LoadMail();
 
-    SetSpecsCount(fields[57].GetUInt8());
-    SetActiveSpec(fields[58].GetUInt8());
+    SetSpecsCount(fields[55].GetUInt8());
+    SetActiveSpec(fields[56].GetUInt8());
 
     // sanity check
     if (GetSpecsCount() > MAX_TALENT_SPECS || GetActiveSpec() > MAX_TALENT_SPEC || GetSpecsCount() < MIN_TALENT_SPECS)
@@ -17201,6 +17199,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
         sLog->outError("Player %s(GUID: %u) has SpecCount = %u and ActiveSpec = %u.", GetName(), GetGUIDLow(), GetSpecsCount(), GetActiveSpec());
     }
 
+    _LoadCurrency(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_CURRENCY));
     _LoadTalents(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADTALENTS));
     _LoadSpells(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADSPELLS));
 
@@ -17240,7 +17239,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
 
     // check PLAYER_CHOSEN_TITLE compatibility with PLAYER__FIELD_KNOWN_TITLES
     // note: PLAYER__FIELD_KNOWN_TITLES updated at quest status loaded
-    uint32 curTitle = fields[45].GetUInt32();
+    uint32 curTitle = fields[43].GetUInt32();
     if (curTitle && !HasTitle(curTitle))
         curTitle = 0;
 
@@ -17263,11 +17262,11 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     UpdateAllStats();
 
     // restore remembered power/health values (but not more max values)
-    uint32 savedHealth = fields[48].GetUInt32();
+    uint32 savedHealth = fields[46].GetUInt32();
     SetHealth(savedHealth > GetMaxHealth() ? GetMaxHealth() : savedHealth);
     for (uint8 i = 0; i < MAX_POWERS; ++i)
     {
-        uint32 savedPower = fields[49+i].GetUInt32();
+        uint32 savedPower = fields[47+i].GetUInt32();
         SetPower(Powers(i), savedPower > GetMaxPower(Powers(i)) ? GetMaxPower(Powers(i)) : savedPower);
     }
 
@@ -17337,14 +17336,14 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     }
 
     // RaF stuff.
-    m_grantableLevels = fields[63].GetUInt32();
+    m_grantableLevels = fields[61].GetUInt32();
     if (GetSession()->IsARecruiter() || (GetSession()->GetRecruiterId() != 0))
         SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_REFER_A_FRIEND);
 
     if (m_grantableLevels > 0)
         SetByteValue(PLAYER_FIELD_BYTES, 1, 0x01);
 
-    _guildGUID = MAKE_NEW_GUID(fields[64].GetUInt32(), 0, HIGHGUID_GUILD);
+    _guildGUID = MAKE_NEW_GUID(fields[62].GetUInt32(), 0, HIGHGUID_GUILD);
 
     _LoadDeclinedNames(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADDECLINEDNAMES));
 
@@ -18153,6 +18152,35 @@ void Player::_LoadSeasonalQuestStatus(PreparedQueryResult result)
     m_SeasonalQuestChanged = false;
 }
 
+void Player::_LoadCurrency(PreparedQueryResult result)
+{
+    if (result)
+    {
+        do
+        {
+            Field* fields = result->Fetch();
+
+            uint32 currencyId = fields[0].GetUInt16();
+
+            const CurrencyTypesEntry* entry = sCurrencyTypesStore.LookupEntry(currencyId);
+            if (!entry)
+            {
+                sLog->outError("Player::_LoadCurrency: %s (GUID: " UI64FMTD " Low: %u) has not invalid currency id %u.", GetName(), GetGUID(), GetGUIDLow(), currencyId);
+                continue;
+            }
+
+            PlayerCurrency cur;
+
+            cur.state = PLAYERCURRENCY_UNCHANGED;
+            cur.totalCount = fields[1].GetUInt32();;
+            cur.weekCount = fields[2].GetUInt32();;
+
+            m_currencies[currencyId] = cur;
+        }
+        while(result->NextRow());
+    }
+}
+
 void Player::_LoadSpells(PreparedQueryResult result)
 {
     //QueryResult* result = CharacterDatabase.PQuery("SELECT spell, active, disabled FROM character_spell WHERE guid = '%u'", GetGUIDLow());
@@ -18709,8 +18737,6 @@ void Player::SaveToDB(bool create /*=false*/)
         ss << m_taxi.SaveTaxiDestinationsToString();
 
         stmt->setString(index++, ss.str());
-        stmt->setUInt32(index++, GetCurrency(CURRENCY_TYPE_CONQUEST_POINTS));
-        stmt->setUInt32(index++, GetCurrency(CURRENCY_TYPE_HONOR_POINTS));
         stmt->setUInt32(index++, GetUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS));
         stmt->setUInt16(index++, GetUInt16Value(PLAYER_FIELD_KILLS, 0));
         stmt->setUInt16(index++, GetUInt16Value(PLAYER_FIELD_KILLS, 1));
@@ -18821,8 +18847,6 @@ void Player::SaveToDB(bool create /*=false*/)
         ss << m_taxi.SaveTaxiDestinationsToString();
 
         stmt->setString(index++, ss.str());
-        stmt->setUInt32(index++, GetCurrency(CURRENCY_TYPE_CONQUEST_POINTS));
-        stmt->setUInt32(index++, GetCurrency(CURRENCY_TYPE_HONOR_POINTS));
         stmt->setUInt32(index++, GetUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS));
         stmt->setUInt16(index++, GetUInt16Value(PLAYER_FIELD_KILLS, 0));
         stmt->setUInt16(index++, GetUInt16Value(PLAYER_FIELD_KILLS, 1));
@@ -18899,6 +18923,7 @@ void Player::SaveToDB(bool create /*=false*/)
     _SaveEquipmentSets(trans);
     GetSession()->SaveTutorialsData(trans);                 // changed only while character in game
     _SaveGlyphs(trans);
+    _SaveCurrency(trans);
     _SaveInstanceTimeRestrictions(trans);
 
     // check if stats should only be saved on logout
@@ -22137,6 +22162,7 @@ void Player::SendInitialPacketsBeforeAddToMap()
     // SMSG_UPDATE_WORLD_STATE
     // SMSG_POWER_UPDATE
 
+    SendCurrencies();
     SetMover(this);
 }
 
@@ -25006,6 +25032,36 @@ void Player::_SaveGlyphs(SQLTransaction& trans)
             stmt->setUInt16(index++, uint16(GetGlyph(spec, i)));
 
         trans->Append(stmt);
+    }
+}
+
+void Player::_SaveCurrency(SQLTransaction& trans)
+{
+    for (PlayerCurrenciesMap::iterator itr = m_currencies.begin(); itr != m_currencies.end(); ++itr)
+    {
+        if (itr->second.state == PLAYERCURRENCY_UNCHANGED)
+            continue;
+        
+        PreparedStatement* stmt = NULL;
+        if (itr->second.state == PLAYERCURRENCY_CHANGED)
+        {
+            stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_PLAYER_CURRENCY);
+            stmt->setUInt32(0, itr->second.totalCount);
+            stmt->setUInt32(1, itr->second.weekCount);
+            stmt->setUInt32(2, GetGUIDLow());
+            stmt->setUInt32(3, itr->first);
+        }
+        else if (itr->second.state == PLAYERCURRENCY_NEW)
+        {
+            stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_PLAYER_CURRENCY);
+            stmt->setUInt32(0, GetGUIDLow());
+            stmt->setUInt32(1, itr->first);
+            stmt->setUInt32(2, itr->second.totalCount);
+            stmt->setUInt32(3, itr->second.weekCount);
+        }
+        
+        if (stmt)
+            trans->Append(stmt);
     }
 }
 

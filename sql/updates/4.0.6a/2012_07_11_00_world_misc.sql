@@ -1,1 +1,1 @@
-DELETE FROM `achievement_criteria_data` WHERE `type` IN (1, 2, 3, 5, 6, 7, 9, 12, 14, 19, 20, 21);
+DELETE FROM `achievement_criteria_data` WHERE `type` IN (0, 1, 2, 3, 5, 6, 7, 9, 12, 14, 19, 20, 21);

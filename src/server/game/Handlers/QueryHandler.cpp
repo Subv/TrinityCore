@@ -137,6 +137,7 @@ void WorldSession::HandleCreatureQueryOpcode(WorldPacket & recv_data)
         for (uint32 i = 0; i < MAX_CREATURE_QUEST_ITEMS; ++i)
             data << uint32(ci->questItems[i]);              // itemId[6], quest drop
         data << uint32(ci->movementId);                     // CreatureMovementInfo.dbc
+        data << uint32(ci->expansion);                      // client will not allow interaction if this value is not in line with its stored exp
         SendPacket(&data);
         sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Sent SMSG_CREATURE_QUERY_RESPONSE");
     }

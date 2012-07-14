@@ -1510,15 +1510,16 @@ void Guild::HandleLeaveMember(WorldSession* session)
     }
 }
 
-void Guild::HandleRemoveMember(WorldSession* session, const std::string& name)
+void Guild::HandleRemoveMember(WorldSession* session, uint64 guid)
 {
     Player* player = session->GetPlayer();
     // Player must have rights to remove members
     if (!_HasRankRight(player, GR_RIGHT_REMOVE))
         SendCommandResult(session, GUILD_INVITE_S, ERR_GUILD_PERMISSIONS);
     // Removed player must be a member of guild
-    else if (Member* member = GetMember(session, name))
+    else if (Member* member = GetMember(guid))
     {
+        std::string name = member->GetName();
         // Leader cannot be removed
         if (member->IsRank(GR_GUILDMASTER))
             SendCommandResult(session, GUILD_QUIT_S, ERR_GUILD_LEADER_LEAVE);
@@ -1536,15 +1537,16 @@ void Guild::HandleRemoveMember(WorldSession* session, const std::string& name)
     }
 }
 
-void Guild::HandleUpdateMemberRank(WorldSession* session, const std::string& name, bool demote)
+void Guild::HandleUpdateMemberRank(WorldSession* session, uint64 guid, bool demote)
 {
     Player* player = session->GetPlayer();
     // Player must have rights to promote
     if (!_HasRankRight(player, demote ? GR_RIGHT_DEMOTE : GR_RIGHT_PROMOTE))
         SendCommandResult(session, GUILD_INVITE_S, ERR_GUILD_PERMISSIONS);
     // Promoted player must be a member of guild
-    else if (Member* member = GetMember(session, name))
+    else if (Member* member = GetMember(guid))
     {
+        std::string name = member->GetName();
         // Player cannot promote himself
         if (member->IsSamePlayer(player->GetGUID()))
         {

@@ -610,8 +610,8 @@ public:
     void HandleInviteMember(WorldSession* session, const std::string& name);
     void HandleAcceptMember(WorldSession* session);
     void HandleLeaveMember(WorldSession* session);
-    void HandleRemoveMember(WorldSession* session, const std::string& name);
-    void HandleUpdateMemberRank(WorldSession* session, const std::string& name, bool demote);
+    void HandleRemoveMember(WorldSession* session, uint64 guid);
+    void HandleUpdateMemberRank(WorldSession* session, uint64 guid, bool demote);
     void HandleAddNewRank(WorldSession* session, const std::string& name);
     void HandleRemoveLowestRank(WorldSession* session);
     void HandleMemberDepositMoney(WorldSession* session, uint32 amount);

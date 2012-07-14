@@ -1,0 +1,3 @@
+ALTER TABLE `characters` 
+	ADD COLUMN `totalHonorPoints` INT(10) NOT NULL DEFAULT 0,
+	ADD COLUMN `conquestPoints` INT(10) NOT NULL DEFAULT 0;

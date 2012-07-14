@@ -47,14 +47,14 @@
 
 bool MapSessionFilter::Process(WorldPacket* packet)
 {
-    OpcodeHandler const& opHandle = opcodeTable[packet->GetOpcode()];
+    OpcodeHandler const* opHandle = opcodeTable[packet->GetOpcode()];
 
     //let's check if our opcode can be really processed in Map::Update()
-    if (opHandle.packetProcessing == PROCESS_INPLACE)
+    if (opHandle->packetProcessing == PROCESS_INPLACE)
         return true;
 
     //we do not process thread-unsafe packets
-    if (opHandle.packetProcessing == PROCESS_THREADUNSAFE)
+    if (opHandle->packetProcessing == PROCESS_THREADUNSAFE)
         return false;
 
     Player* player = m_pSession->GetPlayer();
@@ -69,13 +69,13 @@ bool MapSessionFilter::Process(WorldPacket* packet)
 //OR packet handler is not thread-safe!
 bool WorldSessionFilter::Process(WorldPacket* packet)
 {
-    OpcodeHandler const& opHandle = opcodeTable[packet->GetOpcode()];
+    OpcodeHandler const* opHandle = opcodeTable[packet->GetOpcode()];
     //check if packet handler is supposed to be safe
-    if (opHandle.packetProcessing == PROCESS_INPLACE)
+    if (opHandle->packetProcessing == PROCESS_INPLACE)
         return true;
 
     //thread-unsafe packets should be processed in World::UpdateSessions()
-    if (opHandle.packetProcessing == PROCESS_THREADUNSAFE)
+    if (opHandle->packetProcessing == PROCESS_THREADUNSAFE)
         return true;
 
     //no player attached? -> our client! ^^
@@ -161,6 +161,12 @@ void WorldSession::SendPacket(WorldPacket const* packet)
     if (!m_Socket)
         return;
 
+    if (!opcodeTable[packet->GetOpcode()])
+    {
+        sLog->outError("Prevented sending disabled opcode %d (hex 0x%04X)", packet->GetOpcode(), packet->GetOpcode());
+        return;
+    }
+    
 #ifdef TRINITY_DEBUG
     // Code for network use statistic
     static uint64 sendPacketCount = 0;
@@ -255,10 +261,10 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
         }
         else
         {
-            OpcodeHandler &opHandle = opcodeTable[packet->GetOpcode()];
+            OpcodeHandler* opHandle = opcodeTable[packet->GetOpcode()];
             try
             {
-                switch (opHandle.status)
+                switch (opHandle->status)
                 {
                     case STATUS_LOGGEDIN:
                         if (!_player)
@@ -276,14 +282,14 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
                                 QueuePacket(packet);
                                 //! Log
                                 sLog->outDebug(LOG_FILTER_NETWORKIO, "Re-enqueueing packet with opcode %s (0x%.4X) with with status STATUS_LOGGEDIN. "
-                                    "Player is currently not in world yet.", opHandle.name, packet->GetOpcode());
+                                    "Player is currently not in world yet.", opHandle->name, packet->GetOpcode());
                             }
 
                         }
                         else if (_player->IsInWorld())
                         {
                             sScriptMgr->OnPacketReceive(m_Socket, WorldPacket(*packet));
-                            (this->*opHandle.handler)(*packet);
+                            (this->*opHandle->handler)(*packet);
                             if (sLog->IsOutDebug() && packet->rpos() < packet->wpos())
                                 LogUnprocessedTail(packet);
                         }
@@ -297,7 +303,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
                         {
                             // not expected _player or must checked in packet handler
                             sScriptMgr->OnPacketReceive(m_Socket, WorldPacket(*packet));
-                            (this->*opHandle.handler)(*packet);
+                            (this->*opHandle->handler)(*packet);
                             if (sLog->IsOutDebug() && packet->rpos() < packet->wpos())
                                 LogUnprocessedTail(packet);
                         }
@@ -310,7 +316,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
                         else
                         {
                             sScriptMgr->OnPacketReceive(m_Socket, WorldPacket(*packet));
-                            (this->*opHandle.handler)(*packet);
+                            (this->*opHandle->handler)(*packet);
                             if (sLog->IsOutDebug() && packet->rpos() < packet->wpos())
                                 LogUnprocessedTail(packet);
                         }
@@ -329,7 +335,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
                             m_playerRecentlyLogout = false;
 
                         sScriptMgr->OnPacketReceive(m_Socket, WorldPacket(*packet));
-                        (this->*opHandle.handler)(*packet);
+                        (this->*opHandle->handler)(*packet);
                         if (sLog->IsOutDebug() && packet->rpos() < packet->wpos())
                             LogUnprocessedTail(packet);
                         break;
@@ -791,14 +797,17 @@ void WorldSession::ReadMovementInfo(WorldPacket &data, MovementInfo* mi)
     if (mi->HasMovementFlag(MovementFlags(MOVEMENTFLAG_SWIMMING | MOVEMENTFLAG_FLYING)) || (mi->HasExtraMovementFlag(MOVEMENTFLAG2_ALWAYS_ALLOW_PITCHING)))
         data >> mi->pitch;
 
-    data >> mi->fallTime;
-
-    if (mi->HasMovementFlag(MOVEMENTFLAG_FALLING))
+if (mi->HasExtraMovementFlag(MOVEMENTFLAG2_INTERPOLATED_TURNING))    // 4.0.6
     {
-        data >> mi->j_zspeed;
-        data >> mi->j_sinAngle;
-        data >> mi->j_cosAngle;
-        data >> mi->j_xyspeed;
+         data >> mi->fallTime;
+         data >> mi->j_zspeed;
+
+        if (mi->HasMovementFlag(MOVEMENTFLAG_FALLING))
+        {
+           data >> mi->j_sinAngle;
+           data >> mi->j_cosAngle;
+           data >> mi->j_xyspeed;
+        }
     }
 
     if (mi->HasMovementFlag(MOVEMENTFLAG_SPLINE_ELEVATION))
@@ -903,14 +912,19 @@ void WorldSession::WriteMovementInfo(WorldPacket* data, MovementInfo* mi)
 
     *data << mi->fallTime;
 
-    if (mi->HasMovementFlag(MOVEMENTFLAG_FALLING))
+    if (mi->HasExtraMovementFlag(MOVEMENTFLAG2_INTERPOLATED_TURNING))    // 4.0.6
     {
+        *data << mi->fallTime;
         *data << mi->j_zspeed;
-        *data << mi->j_sinAngle;
-        *data << mi->j_cosAngle;
-        *data << mi->j_xyspeed;
-    }
 
+        if (mi->HasMovementFlag(MOVEMENTFLAG_FALLING))
+        {
+           *data << mi->j_sinAngle;
+           *data << mi->j_cosAngle;
+           *data << mi->j_xyspeed;
+        }
+    }
+    
     if (mi->HasMovementFlag(MOVEMENTFLAG_SPLINE_ELEVATION))
         *data << mi->splineElevation;
 }

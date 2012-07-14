@@ -44,8 +44,11 @@ void WorldSession::HandleGuildQueryOpcode(WorldPacket& recvPacket)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_GUILD_QUERY");
 
-    uint32 guildId;
-    recvPacket >> guildId;
+    uint64 guildGuid;
+    uint64 player;
+    recvPacket >> guildGuid;
+    recvPacket >> player;
+    uint32 guildId = GUID_LOPART(guildGuid);
     // Use received guild id to access guild method (not player's guild id)
     if (Guild* guild = sGuildMgr->GetGuildById(guildId))
         guild->HandleQuery(this);
@@ -86,12 +89,12 @@ void WorldSession::HandleGuildRemoveOpcode(WorldPacket& recvPacket)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_GUILD_REMOVE");
 
-    std::string playerName;
-    recvPacket >> playerName;
+    uint64 guid;
+    recvPacket >> guid; // target
+    recvPacket.read_skip<uint64>();
 
-    if (normalizePlayerName(playerName))
-        if (Guild* guild = _GetPlayerGuild(this, true))
-            guild->HandleRemoveMember(this, playerName);
+    if (Guild* guild = _GetPlayerGuild(this, true))
+        guild->HandleRemoveMember(this, guid);
 }
 
 void WorldSession::HandleGuildAcceptOpcode(WorldPacket& /*recvPacket*/)
@@ -132,24 +135,24 @@ void WorldSession::HandleGuildPromoteOpcode(WorldPacket& recvPacket)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_GUILD_PROMOTE");
 
-    std::string playerName;
-    recvPacket >> playerName;
+    uint64 guid;
+    recvPacket >> guid; // target guid
+    recvPacket.read_skip<uint64>(); // command issuer's guid?
 
-    if (normalizePlayerName(playerName))
-        if (Guild* guild = _GetPlayerGuild(this, true))
-            guild->HandleUpdateMemberRank(this, playerName, false);
+    if (Guild* guild = _GetPlayerGuild(this, true))
+        guild->HandleUpdateMemberRank(this, guid, false);
 }
 
 void WorldSession::HandleGuildDemoteOpcode(WorldPacket& recvPacket)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_GUILD_DEMOTE");
 
-    std::string playerName;
-    recvPacket >> playerName;
+    uint64 guid;
+    recvPacket >> guid;                  // target guid
+    recvPacket.read_skip<uint64>();      // command issuer's guid?
 
-    if (normalizePlayerName(playerName))
-        if (Guild* guild = _GetPlayerGuild(this, true))
-            guild->HandleUpdateMemberRank(this, playerName, true);
+    if (Guild* guild = _GetPlayerGuild(this, true))
+        guild->HandleUpdateMemberRank(this, guid, true);
 }
 
 void WorldSession::HandleGuildLeaveOpcode(WorldPacket& /*recvPacket*/)
@@ -174,6 +177,8 @@ void WorldSession::HandleGuildLeaderOpcode(WorldPacket& recvPacket)
 
     std::string name;
     recvPacket >> name;
+    recvPacket.read_skip<uint64>(); // guild GUID
+    recvPacket.read_skip<uint64>(); // user's guid?
 
     if (normalizePlayerName(name))
         if (Guild* guild = _GetPlayerGuild(this, true))
@@ -184,9 +189,11 @@ void WorldSession::HandleGuildMOTDOpcode(WorldPacket& recvPacket)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_GUILD_MOTD");
 
+    recvPacket.read_skip<uint64>();
+    recvPacket.read_skip<uint64>();
+    
     std::string motd;               // Empty by default
-    if (!recvPacket.empty())
-        recvPacket >> motd;
+    recvPacket >> motd;
 
     if (Guild* guild = _GetPlayerGuild(this, true))
         guild->HandleSetMOTD(this, motd);

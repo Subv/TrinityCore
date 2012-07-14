@@ -164,7 +164,7 @@ m_HostileRefManager(this)
     m_objectType |= TYPEMASK_UNIT;
     m_objectTypeId = TYPEID_UNIT;
 
-    m_updateFlag = (UPDATEFLAG_LIVING | UPDATEFLAG_STATIONARY_POSITION);
+    m_updateFlag = UPDATEFLAG_LIVING;
 
     m_attackTimer[BASE_ATTACK] = 0;
     m_attackTimer[OFF_ATTACK] = 0;
@@ -17180,17 +17180,19 @@ void Unit::BuildMovementPacket(ByteBuffer *data) const
         || (m_movementInfo.flags2 & MOVEMENTFLAG2_ALWAYS_ALLOW_PITCHING))
         *data << (float)m_movementInfo.pitch;
 
-    *data << (uint32)m_movementInfo.fallTime;
-
-    // 0x00001000
-    if (GetUnitMovementFlags() & MOVEMENTFLAG_FALLING)
+    if (GetExtraUnitMovementFlags() & MOVEMENTFLAG2_INTERPOLATED_TURNING)
     {
+        *data << (uint32)m_movementInfo.fallTime;
         *data << (float)m_movementInfo.j_zspeed;
-        *data << (float)m_movementInfo.j_sinAngle;
-        *data << (float)m_movementInfo.j_cosAngle;
-        *data << (float)m_movementInfo.j_xyspeed;
+        // 0x00001000
+        if (GetUnitMovementFlags() & MOVEMENTFLAG_FALLING)
+        {
+            *data << (float)m_movementInfo.j_sinAngle;
+            *data << (float)m_movementInfo.j_cosAngle;
+            *data << (float)m_movementInfo.j_xyspeed;
+        }
     }
-
+    
     // 0x04000000
     if (GetUnitMovementFlags() & MOVEMENTFLAG_SPLINE_ELEVATION)
         *data << (float)m_movementInfo.splineElevation;

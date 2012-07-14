@@ -319,9 +319,9 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
         *data << ((Unit*)this)->GetSpeed(MOVE_RUN_BACK);
         *data << ((Unit*)this)->GetSpeed(MOVE_SWIM);
         *data << ((Unit*)this)->GetSpeed(MOVE_SWIM_BACK);
+        *data << ((Unit*)this)->GetSpeed(MOVE_TURN_RATE);
         *data << ((Unit*)this)->GetSpeed(MOVE_FLIGHT);
         *data << ((Unit*)this)->GetSpeed(MOVE_FLIGHT_BACK);
-        *data << ((Unit*)this)->GetSpeed(MOVE_TURN_RATE);
         *data << ((Unit*)this)->GetSpeed(MOVE_PITCH_RATE);
 
         // 0x08000000
@@ -330,7 +330,7 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
     }
     else
     {
-        if (flags & UPDATEFLAG_POSITION)
+        if (flags & UPDATEFLAG_GO_TRANSPORT_POSITION)
         {
             Transport* transport = ((WorldObject*)this)->GetTransport();
             if (transport)
@@ -386,39 +386,7 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
 
     // 0x8
     if (flags & UPDATEFLAG_UNKNOWN)
-    {
         *data << uint32(0);
-    }
-
-    // 0x10
-    if (flags & UPDATEFLAG_LOWGUID)
-    {
-        switch (GetTypeId())
-        {
-            case TYPEID_OBJECT:
-            case TYPEID_ITEM:
-            case TYPEID_CONTAINER:
-            case TYPEID_GAMEOBJECT:
-            case TYPEID_DYNAMICOBJECT:
-            case TYPEID_CORPSE:
-                *data << uint32(GetGUIDLow());              // GetGUIDLow()
-                break;
-            //! Unit, Player and default here are sending wrong values.
-            //! TODO: Research the proper formula
-            case TYPEID_UNIT:
-                *data << uint32(0x0000000B);                // unk
-                break;
-            case TYPEID_PLAYER:
-                if (flags & UPDATEFLAG_SELF)
-                    *data << uint32(0x0000002F);            // unk
-                else
-                    *data << uint32(0x00000008);            // unk
-                break;
-            default:
-                *data << uint32(0x00000000);                // unk
-                break;
-        }
-    }
 
     // 0x4
     if (flags & UPDATEFLAG_HAS_TARGET)
@@ -431,9 +399,7 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
 
     // 0x2
     if (flags & UPDATEFLAG_TRANSPORT)
-    {
         *data << uint32(getMSTime());                       // Unknown - getMSTime is wrong.
-    }
 
     // 0x80
     if (flags & UPDATEFLAG_VEHICLE)
@@ -452,9 +418,15 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
     {
         *data << int64(((GameObject*)this)->GetRotation());
     }
+    
     // 0x1000
-    if (flags & UPDATEFLAG_UNK3)
-        *data << uint8(0);  // unk counter to read uint32 values
+    if (flags & UPDATEFLAG_UNK5)
+    {
+        uint8 bytes = 0;
+        *data << bytes;
+        for(uint8 i = 0; i < bytes; i++)
+            *data << uint32(0);
+    }
 }
 
 void Object::_BuildValuesUpdate(uint8 updatetype, ByteBuffer * data, UpdateMask* updateMask, Player* target) const

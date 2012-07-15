@@ -389,7 +389,7 @@ enum Opcodes
     CMSG_MESSAGECHAT_RAID_LEADER                       = 0x00863,   // 4.0.6a 13623
     CMSG_MESSAGECHAT_RAID_WARNING                      = 0x00061,   // 4.0.6a 13623
     CMSG_MESSAGECHAT_SAY                               = 0x0002A,   // 4.0.6a 13623
-    CMSG_MESSAGECHAT_WHISPER                           = 0x00000, 
+    CMSG_MESSAGECHAT_WHISPER                           = 0x00000,   // 4.0.6a 13623 Note: Perfectly valid opcode ( 0x0 )
     CMSG_MESSAGECHAT_YELL                              = 0x00802,   // 4.0.6a 13623
     CMSG_MINIGAME_MOVE                                 = 0x0B2E4,   // 4.0.6a 13623
     CMSG_MOUNTSPECIAL_ANIM                             = 0x02EE4,   // 4.0.6a 13623

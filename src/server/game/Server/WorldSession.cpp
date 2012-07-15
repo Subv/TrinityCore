@@ -70,6 +70,7 @@ bool MapSessionFilter::Process(WorldPacket* packet)
 bool WorldSessionFilter::Process(WorldPacket* packet)
 {
     OpcodeHandler const* opHandle = opcodeTable[packet->GetOpcode()];
+    
     //check if packet handler is supposed to be safe
     if (opHandle->packetProcessing == PROCESS_INPLACE)
         return true;

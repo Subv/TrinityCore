@@ -31,6 +31,7 @@
 #include "Util.h"
 #include "SpellAuras.h"
 #include "Vehicle.h"
+#include "SpellAuraEffects.h"
 
 class Aura;
 
@@ -47,11 +48,12 @@ class Aura;
 
 void WorldSession::SendPartyResult(PartyOperation operation, const std::string& member, PartyResult res, uint32 val /* = 0 */)
 {
-    WorldPacket data(SMSG_PARTY_COMMAND_RESULT, 4 + member.size() + 1 + 4 + 4);
+    WorldPacket data(SMSG_PARTY_COMMAND_RESULT, 4 + member.size() + 1 + 4 + 4 + 8);
     data << uint32(operation);
     data << member;
     data << uint32(res);
     data << uint32(val);                                    // LFD cooldown related (used with ERR_PARTY_LFG_BOOT_COOLDOWN_S and ERR_PARTY_LFG_BOOT_NOT_ELIGIBLE_S)
+    data << uint64(0);                                      // GUID?
 
     SendPacket(&data);
 }
@@ -763,14 +765,22 @@ void WorldSession::BuildPartyMemberStatsChangedPacket(Player* player, WorldPacke
     if (mask & GROUP_UPDATE_FLAG_AURAS)
     {
         uint64 auramask = player->GetAuraUpdateMaskForRaid();
+        *data << uint8(0); // if true client clears auras that are not covered by auramask
         *data << uint64(auramask);
+        *data << uint32(MAX_AURAS);
         for (uint32 i = 0; i < MAX_AURAS; ++i)
         {
             if (auramask & (uint64(1) << i))
             {
                 AuraApplication const* aurApp = player->GetVisibleAura(i);
                 *data << uint32(aurApp ? aurApp->GetBase()->GetId() : 0);
-                *data << uint8(1);
+                uint8 flags = aurApp ? aurApp->GetFlags() : 0;
+                *data << uint8(flags);  // Aura Flags
+
+                if (flags & AFLAG_ANY_EFFECT_AMOUNT_SENT)
+                    for (uint32 j = 0; j < MAX_SPELL_EFFECTS; ++j)
+                        if (AuraEffect* eff = aurApp->GetBase()->GetEffect(j))
+                            *data << int32(eff->GetAmount());
             }
         }
     }
@@ -840,30 +850,43 @@ void WorldSession::BuildPartyMemberStatsChangedPacket(Player* player, WorldPacke
             *data << (uint16) 0;
     }
 
+    if (mask & GROUP_UPDATE_FLAG_PET_AURAS)
+    {
+        uint64 auramask = pet ? pet->GetAuraUpdateMaskForRaid() : 0;
+        uint32 numAuras = pet ? MAX_AURAS : 0;
+        *data << uint8(0);
+        *data << uint64(auramask);
+        *data << uint32(numAuras);
+        for (uint32 i = 0; i < numAuras; ++i)
+        {
+            if (auramask & (uint64(1) << i))
+            {
+                AuraApplication const* aurApp = pet->GetVisibleAura(i);
+                *data << uint32(aurApp ? aurApp->GetBase()->GetId() : 0);
+                uint8 flags = aurApp ? aurApp->GetFlags() : 0;
+                *data << uint8(flags);  // Aura Flags
+
+                if (flags & AFLAG_ANY_EFFECT_AMOUNT_SENT)
+                    for (uint32 j = 0; j < MAX_SPELL_EFFECTS; ++j)
+                        if (AuraEffect* eff = aurApp->GetBase()->GetEffect(j))
+                            *data << int32(eff->GetAmount());
+            }
+        }
+    }
+    
     if (mask & GROUP_UPDATE_FLAG_VEHICLE_SEAT)
     {
         if (Vehicle* veh = player->GetVehicle())
-            *data << (uint32) veh->GetVehicleInfo()->m_seatID[player->m_movementInfo.t_seat];
-    }
-
-    if (mask & GROUP_UPDATE_FLAG_PET_AURAS)
-    {
-        if (pet)
-        {
-            uint64 auramask = pet->GetAuraUpdateMaskForRaid();
-            *data << uint64(auramask);
-            for (uint32 i = 0; i < MAX_AURAS; ++i)
-            {
-                if (auramask & (uint64(1) << i))
-                {
-                    AuraApplication const* aurApp = player->GetVisibleAura(i);
-                    *data << uint32(aurApp ? aurApp->GetBase()->GetId() : 0);
-                    *data << uint8(1);
-                }
-            }
-        }
+            *data << uint32(veh->GetVehicleInfo()->m_seatID[player->m_movementInfo.t_seat]);
         else
-            *data << (uint64) 0;
+            *data << uint32(0);
+    }
+    
+    if (mask & GROUP_UPDATE_FLAG_PHASE)
+    {
+        *data << uint32(0);
+        *data << uint32(0);
+        // string
     }
 }
 

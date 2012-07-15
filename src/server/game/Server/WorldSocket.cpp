@@ -698,6 +698,12 @@ int WorldSocket::ProcessIncoming(WorldPacket* new_pct)
             {
                 ACE_GUARD_RETURN (LockType, Guard, m_SessionLock, -1);
 
+                if (!opcodeTable[opcode])
+                {
+                    sLog->outError("Opcode with no defined handler received from client: %u", new_pct->GetOpcode());
+                    return 0;
+                }
+                
                 if (m_Session != NULL)
                 {
                     // Our Idle timer will reset on any non PING opcodes.

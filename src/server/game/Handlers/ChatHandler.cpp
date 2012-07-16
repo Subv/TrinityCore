@@ -237,7 +237,7 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
         return;
     }
 
-    if (ChatHandler(this).ParseCommands(msg.c_str()) > 0)
+    if (type != CHAT_MSG_AFK && type != CHAT_MSG_DND && ChatHandler(this).ParseCommands(msg.c_str()) > 0)
         return;
 
     if (!processChatmessageFurtherAfterSecurityChecks(msg, lang))

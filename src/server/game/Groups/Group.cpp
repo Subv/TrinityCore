@@ -462,7 +462,7 @@ bool Group::AddMember(Player* player)
 
                     if (member->HaveAtClient(player))
                     {
-                        UpdateData newData;
+                        UpdateData newData(player->GetMapId());
                         WorldPacket newDataPacket;
                         player->BuildValuesUpdateBlockForPlayer(&newData, member);
                         member->SendDirectMessage(&newDataPacket);

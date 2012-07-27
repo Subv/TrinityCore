@@ -828,11 +828,13 @@ struct SmartAction
         struct
         {
             uint32 byte1;
+            uint32 type;
         } setunitByte;
 
         struct
         {
             uint32 byte1;
+            uint32 type;
         } delunitByte;
 
         struct

@@ -431,7 +431,7 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
     }
 }
 
-void Object::_BuildValuesUpdate(uint8 updatetype, ByteBuffer * data, UpdateMask* updateMask, Player* target) const
+void Object::_BuildValuesUpdate(uint8 updatetype, ByteBuffer* data, UpdateMask* updateMask, Player* target) const
 {
     if (!target)
         return;

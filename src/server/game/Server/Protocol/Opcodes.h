@@ -102,7 +102,7 @@ enum Opcodes
     CMSG_BOT_DETECTED                                  = 0x0E757,   // 4.0.3a 13329 - 403
     CMSG_BOT_DETECTED2                                 = 0x00000,   // Unknown opcode ID
     CMSG_BUG                                           = 0x034AC,   // 4.0.6a 13623
-    CMSG_BUSY_TRADE                                    = 0x00000,   // Unknown opcode ID
+    CMSG_BUSY_TRADE                                    = 0x00713,   // 4.0.6a 13623
     CMSG_BUYBACK_ITEM                                  = 0x0A4C4,   // 4.0.6a 13623
     CMSG_BUY_BANK_SLOT                                 = 0x02BA0,   // 4.0.6a 13623
     CMSG_BUY_ITEM                                      = 0x0EA84,   // 4.0.6a 13623

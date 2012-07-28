@@ -297,7 +297,7 @@ class WorldSession
 
         void SendBattleGroundList(uint64 guid, BattlegroundTypeId bgTypeId);
 
-        void SendTradeStatus(TradeStatus status);
+        void SendTradeStatus(TradeStatus status, uint64 traderGUID = 0);
         void SendUpdateTrade(bool trader_data = true);
         void SendCancelTrade();
 

@@ -12769,9 +12769,9 @@ void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced)
                 return;
         }
         data.append(GetPackGUID());
-        data << (uint32)0;                                  // moveEvent, NUM_PMOVE_EVTS = 0x39
+        data << uint32(0);                                  // moveEvent, NUM_PMOVE_EVTS = 0x39
         if (mtype == MOVE_RUN)
-            data << uint8(0);                               // new 2.1.0
+            data << uint8(0);                               // new 2.1.0, something to do with ClickToMove
         data << float(GetSpeed(mtype));
         SendMessageToSet(&data, true);
     }

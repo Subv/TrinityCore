@@ -1205,10 +1205,10 @@ void WorldSession::HandleInspectOpcode(WorldPacket& recv_data)
         return;
     }
 
-    uint32 talent_points = 0x47;
+    uint32 talent_points = 0x29;
     uint32 guid_size = player->GetPackGUID().wpos();
     WorldPacket data(SMSG_INSPECT_TALENT, guid_size+4+talent_points);
-    data.append(player->GetPackGUID());
+    data << uint64(player->GetGUID());
 
     if (sWorld->getBoolConfig(CONFIG_TALENTS_INSPECTING) || _player->isGameMaster())
     {
@@ -1222,6 +1222,17 @@ void WorldSession::HandleInspectOpcode(WorldPacket& recv_data)
     }
 
     player->BuildEnchantmentsInfoData(&data);
+    
+    /*
+    ToDo: Enable when guild system is updated to Cataclysm
+    if (Guild* guild = sGuildMgr->GetGuildById(player->GetGuildId()))
+    {
+        data << uint64(guild->GetGUID());
+        data << uint32(guild->GetLevel());
+        data << uint64(guild->GetXP());
+        data << uint32(guild->GetMembersCount());
+    }
+    */
     SendPacket(&data);
 }
 

@@ -924,7 +924,7 @@ enum Opcodes
     SMSG_FORCE_SWIM_BACK_SPEED_CHANGE                  = 0x0AE88,   // 4.0.6a 13623
     SMSG_FORCE_SWIM_SPEED_CHANGE                       = 0x0F5A0,   // 4.0.6a 13623
     SMSG_FORCE_TURN_RATE_CHANGE                        = 0x0708C,   // 4.0.6a 13623
-    SMSG_FORCE_WALK_SPEED_CHANGE                       = 0x068E8,   // 4.0.6a 13623
+    SMSG_FORCE_WALK_SPEED_CHANGE                       = 0x0FAA0,   // 4.0.6a 13623
     SMSG_FRIEND_STATUS                                 = 0x0F68C,   // 4.0.6a 13623
     SMSG_GAMEOBJECT_CUSTOM_ANIM                        = 0x02E8C,   // (0x8230)(0x00B3) // 4.0.6a 13623
     SMSG_GAMEOBJECT_DESPAWN_ANIM                       = 0x0BFA8,   // 4.0.6a 13623

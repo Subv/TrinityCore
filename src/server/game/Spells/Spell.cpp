@@ -53,6 +53,8 @@
 #include "SpellScript.h"
 #include "InstanceScript.h"
 #include "SpellInfo.h"
+#include "DB2Structure.h"
+#include "DB2Stores.h"
 
 extern pEffect SpellEffects[TOTAL_SPELL_EFFECTS];
 
@@ -3848,7 +3850,8 @@ void Spell::SendSpellStart()
         castFlags |= CAST_FLAG_PENDING;
 
     if (m_spellInfo->Attributes & SPELL_ATTR0_REQ_AMMO)
-        castFlags |= CAST_FLAG_AMMO;
+        castFlags |= CAST_FLAG_PROJECTILE;
+        
     if ((m_caster->GetTypeId() == TYPEID_PLAYER ||
         (m_caster->GetTypeId() == TYPEID_UNIT && m_caster->ToCreature()->isPet()))
          && m_spellInfo->PowerType != POWER_HEALTH)
@@ -3874,12 +3877,9 @@ void Spell::SendSpellStart()
     if (castFlags & CAST_FLAG_POWER_LEFT_SELF)
         data << uint32(m_caster->GetPower((Powers)m_spellInfo->PowerType));
 
-    if (castFlags & CAST_FLAG_UNKNOWN_23)
-    {
-        data << uint32(0);
-        data << uint32(0);
-    }
-
+    if (castFlags & CAST_FLAG_PROJECTILE)
+        WriteAmmoToPacket(&data);
+   
     m_caster->SendMessageToSet(&data, true);
 }
 
@@ -3898,7 +3898,7 @@ void Spell::SendSpellGo()
         castFlags |= CAST_FLAG_PENDING;
 
     if (m_spellInfo->Attributes & SPELL_ATTR0_REQ_AMMO)
-        castFlags |= CAST_FLAG_AMMO;                        // arrows/bullets visual
+        castFlags |= CAST_FLAG_PROJECTILE;                        // arrows/bullets visual
 
     if ((m_caster->GetTypeId() == TYPEID_PLAYER ||
         (m_caster->GetTypeId() == TYPEID_UNIT && m_caster->ToCreature()->isPet()))
@@ -3943,34 +3943,32 @@ void Spell::SendSpellGo()
     if (castFlags & CAST_FLAG_POWER_LEFT_SELF)
         data << uint32(m_caster->GetPower((Powers)m_spellInfo->PowerType));
 
-    if (castFlags & CAST_FLAG_RUNE_LIST)                   // rune cooldowns list
+    if (castFlags & CAST_FLAG_RUNE_LIST) // rune cooldowns list
     {
         //TODO: There is a crash caused by a spell with CAST_FLAG_RUNE_LIST casted by a creature
         //The creature is the mover of a player, so HandleCastSpellOpcode uses it as the caster
         if (Player* player = m_caster->ToPlayer())
         {
-            uint8 runeMaskInitial = m_runesState;
-            uint8 runeMaskAfterCast = player->GetRunesState();
-            data << uint8(runeMaskInitial);                     // runes state before
-            data << uint8(runeMaskAfterCast);                   // runes state after
+            data << uint8(m_runesState); // runes state before
+            data << uint8(player->GetRunesState()); // runes state after
             for (uint8 i = 0; i < MAX_RUNES; ++i)
             {
-                uint8 mask = (1 << i);
-                if (mask & runeMaskInitial && !(mask & runeMaskAfterCast))  // usable before andon cooldown now...
-                {
-                    // float casts ensure the division is performed on floats as we need float result
-                    float baseCd = float(player->GetRuneBaseCooldown(i));
-                    data << uint8((baseCd - float(player->GetRuneCooldown(i))) / baseCd * 255); // rune cooldown passed
-                }
+                // float casts ensure the division is performed on floats as we need float result
+                float baseCd = float(player->GetRuneBaseCooldown(i));
+                data << uint8((baseCd - float(player->GetRuneCooldown(i))) / baseCd * 255); // rune cooldown passed
             }
         }
     }
+    
     if (castFlags & CAST_FLAG_ADJUST_MISSILE)
     {
         data << m_targets.GetElevation();
         data << uint32(m_delayMoment);
     }
 
+    if (castFlags & CAST_FLAG_PROJECTILE)
+        WriteAmmoToPacket(&data);
+    
     if (castFlags & CAST_FLAG_VISUAL_CHAIN)
     {
         data << uint32(0);
@@ -3983,6 +3981,60 @@ void Spell::SendSpellGo()
     }
 
     m_caster->SendMessageToSet(&data, true);
+}
+
+void Spell::WriteAmmoToPacket(WorldPacket* data)
+{
+    uint32 ammoInventoryType = 0;
+    uint32 ammoDisplayID = 0;
+
+    if (m_caster->GetTypeId() == TYPEID_PLAYER)
+    {
+        Item* item = m_caster->ToPlayer()->GetWeaponForAttack(RANGED_ATTACK);
+        if (item)
+        {
+            ammoInventoryType = item->GetTemplate()->InventoryType;
+            if (ammoInventoryType == INVTYPE_THROWN)
+                ammoDisplayID = item->GetTemplate()->DisplayInfoID;
+        }
+    }
+    else
+    {
+        for (uint8 i = 0; i < 3; ++i)
+        {
+            if (uint32 item_id = m_caster->GetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + i))
+            {
+                if (ItemEntry const* itemEntry = sItemStore.LookupEntry(item_id))
+                {
+                    if (itemEntry->Class == ITEM_CLASS_WEAPON)
+                    {
+                        switch(itemEntry->SubClass)
+                        {
+                            case ITEM_SUBCLASS_WEAPON_THROWN:
+                                ammoDisplayID = itemEntry->DisplayId;
+                                ammoInventoryType = itemEntry->InventoryType;
+                                break;
+                            case ITEM_SUBCLASS_WEAPON_BOW:
+                            case ITEM_SUBCLASS_WEAPON_CROSSBOW:
+                                ammoDisplayID = 5996;       // is this need fixing?
+                                ammoInventoryType = INVTYPE_AMMO;
+                                break;
+                            case ITEM_SUBCLASS_WEAPON_GUN:
+                                ammoDisplayID = 5998;       // is this need fixing?
+                                ammoInventoryType = INVTYPE_AMMO;
+                                break;
+                        }
+
+                        if (ammoDisplayID)
+                            break;
+                    }
+                }
+            }
+        }
+    }
+
+    *data << uint32(ammoDisplayID);
+    *data << uint32(ammoInventoryType);
 }
 
 void Spell::WriteSpellGoTargets(WorldPacket* data)
@@ -4137,14 +4189,14 @@ void Spell::ExecuteLogEffectResurrect(uint8 effIndex, Unit* target)
 
 void Spell::SendInterrupted(uint8 result)
 {
-    WorldPacket data(SMSG_SPELL_FAILURE, (8+4+1));
+    WorldPacket data(SMSG_SPELL_FAILURE, (8+4+2));
     data.append(m_caster->GetPackGUID());
     data << uint8(m_cast_count);
     data << uint32(m_spellInfo->Id);
     data << uint8(result);
     m_caster->SendMessageToSet(&data, true);
 
-    data.Initialize(SMSG_SPELL_FAILED_OTHER, (8+4));
+    data.Initialize(SMSG_SPELL_FAILED_OTHER, (8+4+2));
     data.append(m_caster->GetPackGUID());
     data << uint8(m_cast_count);
     data << uint32(m_spellInfo->Id);

@@ -97,10 +97,10 @@ void LoadDB2Stores(const std::string& dataPath)
     }
 
     // Check loaded DB2 files proper version
-    if (!sItemStore.LookupEntry(72068))
+    if (!sItemStore.LookupEntry(68815) || !sItemSparseStore.LookupEntry(68815))
     {
         sLog->outString();
-        sLog->outError("Please extract correct db2 files from client 4.2.2 14545.");
+        sLog->outError("Please extract correct db2 files from client 4.0.6.13623.");
         exit(1);
     }
 

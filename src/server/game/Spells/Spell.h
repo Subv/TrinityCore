@@ -43,7 +43,7 @@ enum SpellCastFlags
     CAST_FLAG_UNKNOWN_3          = 0x00000004,
     CAST_FLAG_UNKNOWN_4          = 0x00000008,              // ignore AOE visual
     CAST_FLAG_UNKNOWN_5          = 0x00000010,
-    CAST_FLAG_AMMO               = 0x00000020,              // Projectiles visual
+    CAST_FLAG_PROJECTILE         = 0x00000020,              // Projectiles visual
     CAST_FLAG_UNKNOWN_7          = 0x00000040,
     CAST_FLAG_UNKNOWN_8          = 0x00000080,
     CAST_FLAG_UNKNOWN_9          = 0x00000100,
@@ -68,7 +68,7 @@ enum SpellCastFlags
     CAST_FLAG_UNKNOWN_28         = 0x08000000,
     CAST_FLAG_UNKNOWN_29         = 0x10000000,
     CAST_FLAG_UNKNOWN_30         = 0x20000000,
-    CAST_FLAG_UNKNOWN_31         = 0x40000000,
+    CAST_FLAG_HEAL_PREDICTION    = 0x40000000,
     CAST_FLAG_UNKNOWN_32         = 0x80000000,
 };
 
@@ -405,6 +405,7 @@ class Spell
         void setState(uint32 state) { m_spellState = state; }
 
         void DoCreateItem(uint32 i, uint32 itemtype);
+        void WriteAmmoToPacket(WorldPacket* data);
         void WriteSpellGoTargets(WorldPacket* data);
 
         bool CheckEffectTarget(Unit const* target, uint32 eff) const;

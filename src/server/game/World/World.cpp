@@ -45,6 +45,7 @@
 #include "GroupMgr.h"
 #include "Chat.h"
 #include "DBCStores.h"
+#include "DB2Stores.h"
 #include "LootMgr.h"
 #include "ItemEnchantmentMgr.h"
 #include "MapManager.h"
@@ -1275,6 +1276,7 @@ void World::SetInitialWorldSettings()
     ///- Load the DBC files
     sLog->outString("Initialize data stores...");
     LoadDBCStores(m_dataPath);
+    LoadDB2Stores(m_dataPath);
     DetectDBCLang();
 
     sLog->outString("Loading SpellInfo store...");

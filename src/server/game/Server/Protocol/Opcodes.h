@@ -482,7 +482,7 @@ enum Opcodes
     CMSG_REDIRECTION_AUTH_PROOF                        = 0x00E4C,   // 4.0.6a 13623
     CMSG_REDIRECTION_FAILED                            = 0x00000,   // Unknown opcode ID
     CMSG_REDIRECT_AUTH_PROOF                           = 0x00100,   // 4.0.6a 13623
-    CMSG_REFER_A_FRIEND                                = 0x030C4,   // 4.0.6a 13623
+    CMSG_REFER_A_FRIEND                                = 0x00000,   // Unknown opcode ID
     CMSG_REFORGE_ITEM                                  = 0x00313,   // 4.0.6a 13623
     CMSG_REMOVE_GLYPH                                  = 0x00000,   // Unknown opcode ID
     CMSG_REPAIR_ITEM                                   = 0x039E4,   // 4.0.6a 13623
@@ -1185,7 +1185,7 @@ enum Opcodes
     SMSG_REAL_GROUP_UPDATE                             = 0x031C0,   // 4.0.6a 13623
     SMSG_RECEIVED_MAIL                                 = 0x075E4,   // 4.0.6a 13623
     SMSG_REDIRECT_CLIENT                               = 0x0201B,   // 4.0.6a 13623
-    SMSG_REFER_A_FRIEND_FAILURE                        = 0x07F7C,   // 4.0.6a 13623
+    SMSG_REFER_A_FRIEND_FAILURE                        = 0x0A28C,   // 4.0.6a 13623
     SMSG_REFORGE_OPEN_FROM_GOSSIP                      = 0x00C5C,   // 4.0.6a 13623
     SMSG_REMOVED_SPELL                                 = 0x07CA0,   // 4.0.6a 13623
     SMSG_REPORT_PVP_AFK_RESULT                         = 0x078E8,   // 4.0.6a 13623
@@ -1227,7 +1227,7 @@ enum Opcodes
     SMSG_SHOW_BANK                                     = 0x027A4,   // 4.0.6a 13623
     SMSG_SPELLBREAKLOG                                 = 0x0BDAC,   // 4.0.6a 13623
     SMSG_SPELLDAMAGESHIELD                             = 0x073A0,   // 4.0.6a 13623
-    SMSG_SPELLDISPELLOG                                = 0x0A9C8,    // 4.0.6a 13623
+    SMSG_SPELLDISPELLOG                                = 0x0A9C8,   // 4.0.6a 13623
     SMSG_SPELLENERGIZELOG                              = 0x0F0EC,   // 4.0.6a 13623
     SMSG_SPELLHEALLOG                                  = 0x06E84,   // 4.0.6a 13623
     SMSG_SPELLINSTAKILLLOG                             = 0x061C8,   // 4.0.6a 13623
@@ -1281,7 +1281,7 @@ enum Opcodes
     SMSG_SUPERCEDED_SPELL                              = 0x0E8E4,   // 4.0.6a 13623
     SMSG_SUSPEND_COMMS                                 = 0x00000,   // Unknown opcode ID
     SMSG_TALENTS_INFO                                  = 0x075C4,   // 4.0.6a 13623
-    SMSG_TALENTS_INVOLUNTARILY_RESET                   = 0x02A84,   // 4.0.6a 13623
+    SMSG_TALENTS_INVOLUNTARILY_RESET                   = 0x0F6E4,   // 4.0.6a 13623
     SMSG_TALENT_ERROR                                  = 0x068A4,   // 4.0.6a 13623
     SMSG_TAXINODE_STATUS                               = 0x077E8,   // 4.0.6a 13623
     SMSG_TEXT_EMOTE                                    = 0x0BB8C,   // 4.0.6a 13623
@@ -1302,7 +1302,6 @@ enum Opcodes
     SMSG_TRIGGER_MOVIE                                 = 0x020C8,   // 4.0.6a 13623
     SMSG_TURN_IN_PETITION_RESULTS                      = 0x035AC,   // 4.0.6a 13623
     SMSG_TUTORIAL_FLAGS                                = 0x03384,   // 4.0.6a 13623
-    SMSG_UI_TIME                                       = 0x0618C,   // 4.0.6a 13623
     SMSG_UNIT_SPELLCAST_START                          = 0x0BDE0,   // 4.0.6a 13623
     SMSG_UNKNOWN_1240                                  = 0x0B8E0,   // 4.0.6a 13623
     SMSG_UNKNOWN_1276                                  = 0x00000,   // Unknown opcode ID
@@ -1315,8 +1314,6 @@ enum Opcodes
     SMSG_UNKNOWN_1316                                  = 0x00000,   // Unknown opcode ID/Name
     SMSG_UNKNOWN_1317                                  = 0x00000,   // Unknown opcode ID/Name
     SMSG_UNKNOWN_1329                                  = 0x02D57,   // 4.0.3a 13329
-    SMSG_UNKNOWN_1330                                  = 0x0618C,   // 4.0.6a 13623
-    SMSG_UNKNOWN_65508                                 = 0x0FFE4,   // Unknown opcode Name
     SMSG_UNKNOWN_GOLD                                  = 0x0004E,   // 4.0.6a 13623 gives gold to the player
     SMSG_UPDATE_ACCOUNT_DATA                           = 0x0F7A0,   // 4.0.6a 13623
     SMSG_UPDATE_ACCOUNT_DATA_COMPLETE                  = 0x0B1CC,   // 4.0.6a 13623
@@ -1347,7 +1344,7 @@ enum Opcodes
     SMSG_WEATHER                                       = 0x079A0,   // 4.0.6a 13623
     SMSG_WHO                                           = 0x0BE8C,   // 4.0.6a 13623
     SMSG_WHOIS                                         = 0x0B1A4,   // 4.0.6a 13623
-    SMSG_WORLD_STATE_UI_TIMER_UPDATE                   = 0x05557,   // 4.0.6a 13623
+    SMSG_WORLD_STATE_UI_TIMER_UPDATE                   = 0x0618C,   // 4.0.6a 13623 // SMSG_UI_TIME
     SMSG_ZONE_UNDER_ATTACK                             = 0x0BD80,   // 4.0.6a 13623
     CMSG_GUILD_ACHIEVEMENT_PROGRESS_QUERY              = 0x00000, 
 };

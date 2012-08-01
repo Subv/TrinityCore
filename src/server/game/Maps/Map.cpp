@@ -2450,6 +2450,7 @@ bool InstanceMap::AddPlayerToMap(Player* player)
                             data << uint32(60000);
                             data << uint32(i_data ? i_data->GetCompletedEncounterMask() : 0);
                             data << uint8(0);
+                            data << uint8(0);
                             player->GetSession()->SendPacket(&data);
                             player->SetPendingBind(mapSave->GetInstanceId(), 60000);
                         }

@@ -256,7 +256,7 @@ void WorldSession::HandleCorpseQueryOpcode(WorldPacket & /*recv_data*/)
     data << float(y);
     data << float(z);
     data << int32(corpsemapid);
-    data << uint32(0);                                      // unknown
+    data << uint32(0);              // unk, transport low guid?
     SendPacket(&data);
 }
 

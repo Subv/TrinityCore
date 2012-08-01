@@ -8641,7 +8641,7 @@ void Player::RemovedInsignia(Player* looterPlr)
 
 void Player::SendLootRelease(uint64 guid)
 {
-    WorldPacket data(SMSG_LOOT_RELEASE_RESPONSE, (8+1));
+    WorldPacket data(SMSG_LOOT_RELEASE_RESPONSE, (8 + 1));
     data << uint64(guid) << uint8(1);
     SendDirectMessage(&data);
 }

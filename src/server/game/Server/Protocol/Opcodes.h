@@ -1060,7 +1060,7 @@ enum Opcodes
     SMSG_MEETINGSTONE_COMPLETE                         = 0x0F680,   // 4.0.6a 13623
     SMSG_MEETINGSTONE_IN_PROGRESS                      = 0x0E7C4,   // 4.0.6a 13623
     SMSG_MEETINGSTONE_MEMBER_ADDED                     = 0x0B2A8,   // 4.0.6a 13623
-    SMSG_MEETINGSTONE_SETQUEUE                         = 0x0ED88,   // 4.0.6a 13623 (almost 100% sure it's wrong)
+    SMSG_MEETINGSTONE_SETQUEUE                         = 0x00000,   // Unknown Opcode ID
     SMSG_MESSAGECHAT                                   = 0x061E4,   // 4.0.6a 13623
     SMSG_MINIGAME_MOVE_FAILED                          = 0x00000,   // Unknown opcode ID
     SMSG_MINIGAME_SETUP                                = 0x026A4,   // 4.0.6a 13623

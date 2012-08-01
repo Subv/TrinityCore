@@ -180,10 +180,16 @@ void WorldSession::HandleLootMoneyOpcode(WorldPacket & /*recv_data*/)
             {
                 (*i)->ModifyMoney(goldPerPlayer);
                 (*i)->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_LOOT_MONEY, goldPerPlayer);
+                
+                uint32 guildGold = 0;
+                
+                if (Guild* guild = sGuildMgr->GetGuildById((*i)->GetGuildId()))
+                    guildGold = CalculatePctN(goldPerPlayer, (*i)->GetTotalAuraModifier(SPELL_AURA_DEPOSIT_BONUS_MONEY_IN_GUILD_BANK_ON_LOOT));
 
                 WorldPacket data(SMSG_LOOT_MONEY_NOTIFY, 4 + 1);
                 data << uint32(goldPerPlayer);
                 data << uint8(playersNear.size() > 1 ? 0 : 1);     // Controls the text displayed in chat. 0 is "Your share is..." and 1 is "You loot..."
+                data << uint32(guildGold);
                 (*i)->GetSession()->SendPacket(&data);
             }
         }
@@ -192,9 +198,15 @@ void WorldSession::HandleLootMoneyOpcode(WorldPacket & /*recv_data*/)
             player->ModifyMoney(loot->gold);
             player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_LOOT_MONEY, loot->gold);
 
+            uint32 guildGold = 0;
+                
+            if (Guild* guild = sGuildMgr->GetGuildById((*i)->GetGuildId()))
+                guildGold = CalculatePctN(goldPerPlayer, (*i)->GetTotalAuraModifier(SPELL_AURA_DEPOSIT_BONUS_MONEY_IN_GUILD_BANK_ON_LOOT));
+                
             WorldPacket data(SMSG_LOOT_MONEY_NOTIFY, 4 + 1);
             data << uint32(loot->gold);
             data << uint8(1);   // "You loot..."
+            data << uint32(guildGold);
             SendPacket(&data);
         }
 

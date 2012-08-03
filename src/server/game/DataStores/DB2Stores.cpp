@@ -32,7 +32,7 @@ uint32 DB2FilesCount = 0;
 
 static bool LoadDB2_assert_print(uint32 fsize,uint32 rsize, const std::string& filename)
 {
-    sLog->outError("Size of '%s' setted by format string (%u) not equal size of C++ structure (%u).", filename.c_str(), fsize, rsize);
+    sLog->outError(LOG_FILTER_GENERAL, "Size of '%s' setted by format string (%u) not equal size of C++ structure (%u).", filename.c_str(), fsize, rsize);
 
     // ASSERT must fail after function call
     return false;
@@ -83,7 +83,7 @@ void LoadDB2Stores(const std::string& dataPath)
     // error checks
     if (bad_db2_files.size() >= DB2FilesCount)
     {
-        sLog->outError("\nIncorrect DataDir value in worldserver.conf or ALL required *.db2 files (%d) not found by path: %sdb2", DB2FilesCount, dataPath.c_str());
+        sLog->outError(LOG_FILTER_GENERAL, "\nIncorrect DataDir value in worldserver.conf or ALL required *.db2 files (%d) not found by path: %sdb2", DB2FilesCount, dataPath.c_str());
         exit(1);
     }
     else if (!bad_db2_files.empty())
@@ -92,18 +92,16 @@ void LoadDB2Stores(const std::string& dataPath)
         for (std::list<std::string>::iterator i = bad_db2_files.begin(); i != bad_db2_files.end(); ++i)
             str += *i + "\n";
 
-        sLog->outError("\nSome required *.db2 files (%u from %d) not found or not compatible:\n%s", (uint32)bad_db2_files.size(), DB2FilesCount,str.c_str());
+        sLog->outError(LOG_FILTER_GENERAL, "\nSome required *.db2 files (%u from %d) not found or not compatible:\n%s", (uint32)bad_db2_files.size(), DB2FilesCount,str.c_str());
         exit(1);
     }
 
     // Check loaded DB2 files proper version
     if (!sItemStore.LookupEntry(68815) || !sItemSparseStore.LookupEntry(68815))
     {
-        sLog->outString();
-        sLog->outError("Please extract correct db2 files from client 4.0.6.13623.");
+        sLog->outError(LOG_FILTER_GENERAL, "Please extract correct db2 files from client 4.0.6.13623.");
         exit(1);
     }
 
-    sLog->outString(">> Initialized %d DB2 data stores.", DB2FilesCount);
-    sLog->outString();
+    sLog->outInfo(LOG_FILTER_GENERAL, ">> Initialized %d DB2 data stores.", DB2FilesCount);
 }

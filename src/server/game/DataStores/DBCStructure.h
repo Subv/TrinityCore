@@ -1309,14 +1309,15 @@ struct LFGDungeonEntry
     uint32 recmaxlevel;                                     // 6
     int32 map;                                              // 7
     uint32 difficulty;                                      // 8
-    //uint32 unk;                                           // 9
+    //uint32 Flags;                                         // 9 (flags & 4) = IsHoliday
     uint32 type;                                            // 10
-    //uint32 unk2;                                          // 11
-    //char* unk3;                                           // 12
+    //uint32 unk;                                           // 11
+    //char* iconname;                                       // 12
     uint32 expansion;                                       // 13
-    //uint32 unk4;                                          // 14
+    //uint32 unk2;                                          // 14
     uint32 grouptype;                                       // 15
     //char* desc;                                           // 16 Description
+
     // Helpers
     uint32 Entry() const { return ID + (type << 24); }
 };

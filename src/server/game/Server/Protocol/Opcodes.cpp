@@ -32,7 +32,7 @@ void InitOpcodeTable()
     if (opcode < NUM_OPCODE_HANDLERS) {                                                         \
         if (opcodeTable[opcode] != NULL)                                                        \
         {                                                                                       \
-            sLog->outError("Tried to override handler of %s with %s (opcode %u)",               \
+            sLog->outError(LOG_FILTER_NETWORKIO, "Tried to override handler of %s with %s (opcode %u)",               \
                 opcodeTable[opcode]->name, #opcode, opcode);                                    \
         }                                                                                       \
         else opcodeTable[opcode] = new OpcodeHandler(#opcode, status, processing, handler);     \

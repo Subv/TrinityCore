@@ -596,7 +596,6 @@ enum Opcodes
     CMSG_TUTORIAL_CLEAR                                = 0x0A5E4,   // 4.0.6a 13623
     CMSG_TUTORIAL_FLAG                                 = 0x0E4CC,   // 4.0.6a 13623
     CMSG_TUTORIAL_RESET                                = 0x02188,   // 4.0.6a 13623
-    CMSG_UI_TIME_REQUEST                               = 0x03FA8,   // 4.0.6a 13623
     CMSG_UNACCEPT_TRADE                                = 0x00811,   // 4.0.6a 13623
     CMSG_UNITANIMTIER_CHEAT                            = 0x00000,   // Unknown opcode ID
     CMSG_UNKNOWN_1320                                  = 0x00000,   // Unknown opcode ID/Name

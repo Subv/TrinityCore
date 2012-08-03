@@ -270,7 +270,7 @@ void WorldSession::HandlePetActionHelper(Unit* pet, uint64 guid1, uint16 spellid
                 {
                     pet->AttackStop();
                     pet->InterruptNonMeleeSpells(false);
-                    pet->GetMotionMaster()->MoveTo(x, y, z);
+                    pet->GetMotionMaster()->MovePoint(0, x, y, z);
                     charmInfo->SetCommandState(COMMAND_MOVE);
 
                     charmInfo->SetIsAtStay(true);

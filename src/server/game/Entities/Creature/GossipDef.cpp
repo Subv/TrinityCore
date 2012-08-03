@@ -127,7 +127,7 @@ void PlayerMenu::SendGossipMenu(uint32 titleTextId, uint64 objectGUID) const
     data << uint64(objectGUID);
     data << uint32(_gossipMenu.GetMenuId());            // new 2.4.0
     data << uint32(titleTextId);
-    data << uint32(_gossipMenu.GetMenuItemCount());     // max count 0x10
+    data << uint32(_gossipMenu.GetMenuItemCount());     // max count 0x20
 
     for (GossipMenuItemContainer::const_iterator itr = _gossipMenu.GetMenuItems().begin(); itr != _gossipMenu.GetMenuItems().end(); ++itr)
     {
@@ -243,7 +243,7 @@ void QuestMenu::ClearMenu()
 
 void PlayerMenu::SendQuestGiverQuestList(QEmote eEmote, const std::string& Title, uint64 npcGUID)
 {
-    WorldPacket data(SMSG_QUESTGIVER_QUEST_LIST, 100);    // guess size
+    WorldPacket data(SMSG_QUESTGIVER_QUEST_LIST, 8 + Title.size() + 4 + 4 + _questMenu.GetMenuItemCount() * (4 + 4 + 4 + 4 + 8 + 30));    // guess size
     data << uint64(npcGUID);
     data << Title;
     data << uint32(eEmote._Delay);                         // player emote
@@ -281,11 +281,11 @@ void PlayerMenu::SendQuestGiverQuestList(QEmote eEmote, const std::string& Title
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Sent SMSG_QUESTGIVER_QUEST_LIST NPC Guid=%u", GUID_LOPART(npcGUID));
 }
 
-void PlayerMenu::SendQuestGiverStatus(uint8 questStatus, uint64 npcGUID) const
+void PlayerMenu::SendQuestGiverStatus(uint32 questStatus, uint64 npcGUID) const
 {
-    WorldPacket data(SMSG_QUESTGIVER_STATUS, 9);
+    WorldPacket data(SMSG_QUESTGIVER_STATUS, 12);
     data << uint64(npcGUID);
-    data << uint8(questStatus);
+    data << uint32(questStatus);
 
     _session->SendPacket(&data);
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Sent SMSG_QUESTGIVER_STATUS NPC Guid=%u, status=%u", GUID_LOPART(npcGUID), questStatus);
@@ -312,69 +312,64 @@ void PlayerMenu::SendQuestGiverQuestDetails(Quest const* quest, uint64 npcGUID, 
 
     WorldPacket data(SMSG_QUESTGIVER_QUEST_DETAILS, 100);   // guess size
     data << uint64(npcGUID);
-    data << uint64(0);                                      // wotlk, something todo with quest sharing?
+    data << uint64(0);                                      // guid of the quest sharer MAKE_NEW_GUID(GetPlayer()->GetDivider(), 0, HIGHGUID_PLAYER)
     data << uint32(quest->GetQuestId());
     data << questTitle;
     data << questDetails;
     data << questObjectives;
-    data << uint8(activateAccept ? 1 : 0);                  // auto finish
+    data << quest->GetQuestGiverTextWindow();
+    data << quest->GetQuestGiverTargetName();
+    data << quest->GetQuestTurnTextWindow();
+    data << quest->GetQuestTurnTargetName();
+    data << uint32(quest->GetQuestGiverPortrait());
+    data << uint32(quest->GetQuestTurnInPortrait());
+    data << uint8(activateAccept);                           // auto finish
     data << uint32(quest->GetFlags());                      // 3.3.3 questFlags
     data << uint32(quest->GetSuggestedPlayers());
     data << uint8(0);                                       // IsFinished? value is sent back to server in quest accept packet
+    data << uint8(0);                                       // QuestIsFromAreaTrigger
+    data << uint32(quest->GetRequiredSpell());
 
-    if (quest->HasFlag(QUEST_FLAGS_HIDDEN_REWARDS))
+    data << uint32(quest->GetRewChoiceItemsCount());
+
+    for (uint32 i = 0; i < QUEST_REWARD_CHOICES_COUNT; ++i)
+        data << uint32(quest->RewardChoiceItemId[i]);
+    
+    for (uint32 i = 0; i < QUEST_REWARD_CHOICES_COUNT; ++i)    
+        data << uint32(quest->RewardChoiceItemCount[i]);
+
+    for (uint32 i = 0; i < QUEST_REWARD_CHOICES_COUNT; ++i)
     {
-        data << uint32(0);                                  // Rewarded chosen items hidden
-        data << uint32(0);                                  // Rewarded items hidden
-        data << uint32(0);                                  // Rewarded money hidden
-        data << uint32(0);                                  // Rewarded XP hidden
-    }
-    else
-    {
-        data << uint32(quest->GetRewChoiceItemsCount());
-        for (uint32 i=0; i < QUEST_REWARD_CHOICES_COUNT; ++i)
-        {
-            if (!quest->RewardChoiceItemId[i])
-                continue;
-
-            data << uint32(quest->RewardChoiceItemId[i]);
-            data << uint32(quest->RewardChoiceItemCount[i]);
-
-            if (ItemTemplate const* itemTemplate = sObjectMgr->GetItemTemplate(quest->RewardChoiceItemId[i]))
-                data << uint32(itemTemplate->DisplayInfoID);
-            else
-                data << uint32(0x00);
-        }
-
-        data << uint32(quest->GetRewItemsCount());
-
-        for (uint32 i=0; i < QUEST_REWARDS_COUNT; ++i)
-        {
-            if (!quest->RewardItemId[i])
-                continue;
-
-            data << uint32(quest->RewardItemId[i]);
-            data << uint32(quest->RewardItemIdCount[i]);
-
-            if (ItemTemplate const* itemTemplate = sObjectMgr->GetItemTemplate(quest->RewardItemId[i]))
-                data << uint32(itemTemplate->DisplayInfoID);
-            else
-                data << uint32(0);
-        }
-
-        data << uint32(quest->GetRewOrReqMoney());
-        data << uint32(quest->XPValue(_session->GetPlayer()) * sWorld->getRate(RATE_XP_QUEST));
+        if (ItemTemplate const* itemTemplate = sObjectMgr->GetItemTemplate(quest->RewardChoiceItemId[i]))
+            data << uint32(itemTemplate->DisplayInfoID);
+        else
+            data << uint32(0);
     }
 
-    // rewarded honor points. Multiply with 10 to satisfy client
-    data << 10 * Trinity::Honor::hk_honor_at_level(_session->GetPlayer()->getLevel(), quest->GetRewHonorMultiplier());
-    data << float(0.0f);                                       // new 3.3.0, honor multiplier?
-    data << uint32(quest->GetRewSpell());                   // reward spell, this spell will display (icon) (casted if RewSpellCast == 0)
-    data << int32(quest->GetRewSpellCast());                // casted spell
+    data << uint32(quest->GetRewItemsCount());
+
+    for (uint32 i = 0; i < QUEST_REWARDS_COUNT; ++i)
+        data << uint32(quest->RewardItemId[i]);
+    
+    for (uint32 i = 0; i < QUEST_REWARDS_COUNT; ++i)
+        data << uint32(quest->RewardItemIdCount[i]);
+
+    for (uint32 i = 0; i < QUEST_REWARDS_COUNT; ++i)
+    {
+        if (ItemTemplate const* itemTemplate = sObjectMgr->GetItemTemplate(quest->RewardItemId[i]))
+            data << uint32(itemTemplate->DisplayInfoID);
+        else
+            data << uint32(0);
+    }
+
+    data << uint32(quest->GetRewOrReqMoney());
+    data << uint32(quest->XPValue(_session->GetPlayer()) * sWorld->getRate(RATE_XP_QUEST));
     data << uint32(quest->GetCharTitleId());                // CharTitleId, new 2.4.0, player gets this title (id from CharTitles)
+    data << uint32(0);      // unk
+    data << float(0);       // unk
     data << uint32(quest->GetBonusTalents());               // bonus talents
-    data << uint32(quest->GetRewArenaPoints());             // reward arena points
     data << uint32(0);                                      // unk
+    data << uint32(quest->GetRewardReputationMask());
 
     for (uint32 i = 0; i < QUEST_REPUTATIONS_COUNT; ++i)
         data << uint32(quest->RewardFactionId[i]);
@@ -385,6 +380,18 @@ void PlayerMenu::SendQuestGiverQuestDetails(Quest const* quest, uint64 npcGUID, 
     for (uint32 i = 0; i < QUEST_REPUTATIONS_COUNT; ++i)
         data << int32(quest->RewardFactionValueIdOverride[i]);
 
+    data << uint32(quest->GetRewSpell());                   // reward spell, this spell will display (icon) (casted if RewSpellCast == 0)
+    data << int32(quest->GetRewSpellCast());                // casted spell
+
+    for (uint32 i = 0; i < QUEST_REWARD_CURRENCY_COUNT; ++i)
+        data << uint32(quest->RewardCurrencyId[i]);
+        
+    for (uint32 i = 0; i < QUEST_REWARD_CURRENCY_COUNT; ++i)
+        data << uint32(quest->RewardCurrencyCount[i]);
+    
+    data << uint32(quest->GetRewardSkillId());
+    data << uint32(quest->GetRewardSkillPoints());
+    
     data << uint32(QUEST_EMOTE_COUNT);
     for (uint32 i = 0; i < QUEST_EMOTE_COUNT; ++i)
     {

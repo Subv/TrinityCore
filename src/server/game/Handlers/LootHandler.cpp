@@ -29,6 +29,8 @@
 #include "Group.h"
 #include "World.h"
 #include "Util.h"
+#include "GuildMgr.h"
+#include "Guild.h"
 
 void WorldSession::HandleAutostoreLootItemOpcode(WorldPacket & recv_data)
 {
@@ -200,8 +202,8 @@ void WorldSession::HandleLootMoneyOpcode(WorldPacket & /*recv_data*/)
 
             uint32 guildGold = 0;
                 
-            if (Guild* guild = sGuildMgr->GetGuildById((*i)->GetGuildId()))
-                guildGold = CalculatePctN(goldPerPlayer, (*i)->GetTotalAuraModifier(SPELL_AURA_DEPOSIT_BONUS_MONEY_IN_GUILD_BANK_ON_LOOT));
+            if (Guild* guild = sGuildMgr->GetGuildById(player->GetGuildId()))
+                guildGold = CalculatePctN(loot->gold, player->GetTotalAuraModifier(SPELL_AURA_DEPOSIT_BONUS_MONEY_IN_GUILD_BANK_ON_LOOT));
                 
             WorldPacket data(SMSG_LOOT_MONEY_NOTIFY, 4 + 1);
             data << uint32(loot->gold);

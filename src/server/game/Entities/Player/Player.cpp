@@ -14988,7 +14988,7 @@ void Player::RewardQuest(Quest const* quest, uint32 reward, Object* questGiver, 
     
     for (uint8 i = 0; i < QUEST_REQUIRED_CURRENCY_COUNT; ++i)
         if (quest->RequiredCurrencyId[i])
-            ModifyCurrency(quest->RequiredCurrencyId[i], -quest->RequiredCurrencyCount[i]);
+            ModifyCurrency(quest->RequiredCurrencyId[i], -(int)(quest->RequiredCurrencyCount[i]));
 
     RemoveTimedQuest(quest_id);
 
@@ -20923,7 +20923,7 @@ inline bool Player::_StoreOrEquipNewItem(uint32 vendorslot, uint32 item, uint8 c
         for (uint8 i = 0; i < MAX_EXTENDED_COST_CURRENCIES; ++i)
         {
             if (iece->RequiredCurrency[i])
-                ModifyCurrency(iece->RequiredCurrency[i], -iece->RequiredCurrencyCount[i]);
+                ModifyCurrency(iece->RequiredCurrency[i], -(int)(iece->RequiredCurrencyCount[i]));
         }
 
         for (uint8 i = 0; i < MAX_ITEM_EXTENDED_COST_REQUIREMENTS; ++i)

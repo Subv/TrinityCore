@@ -260,7 +260,7 @@ void WorldSession::HandleCorpseQueryOpcode(WorldPacket & /*recv_data*/)
     SendPacket(&data);
 }
 
-void WorldSession::HandleNpcTextQueryOpcode(WorldPacket & recv_data)
+void WorldSession::HandleNpcTextQueryOpcode(WorldPacket& recv_data)
 {
     uint32 textID;
     uint64 guid;

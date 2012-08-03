@@ -1122,7 +1122,7 @@ enum Opcodes
     SMSG_PET_GUIDS                                     = 0x0E4E8,   // 4.0.6a 13623
     SMSG_PET_LEARNED_SPELL                             = 0x0B3C4,   // 4.0.6a 13623
     SMSG_PET_MODE                                      = 0x079C0,   // 4.0.6a 13623
-    SMSG_PET_NAME_INVALID                              = 0x00000, 
+    SMSG_PET_NAME_INVALID                              = 0x0F7E4,   // 4.0.6a 13623
     SMSG_PET_NAME_QUERY_RESPONSE                       = 0x068AC,   // 4.0.6a 13623
     SMSG_PET_REMOVED_SPELL                             = 0x0F28C,   // 4.0.6a 13623
     SMSG_PET_RENAMEABLE                                = 0x0B6C8,   // 4.0.6a 13623
@@ -1158,7 +1158,7 @@ enum Opcodes
     SMSG_QUESTGIVER_QUEST_DETAILS                      = 0x068A0,   // 4.0.6a 13623
     SMSG_QUESTGIVER_QUEST_FAILED                       = 0x0A084,   // 4.0.6a 13623
     SMSG_QUESTGIVER_QUEST_INVALID                      = 0x02B88,   // 4.0.6a 13623
-    SMSG_QUESTGIVER_QUEST_LIST                         = 0x02B88,   // 4.0.6a 13623
+    SMSG_QUESTGIVER_QUEST_LIST                         = 0x0BBEC,   // 4.0.6a 13623
     SMSG_QUESTGIVER_REQUEST_ITEMS                      = 0x06EE0,   // 4.0.6a 13623
     SMSG_QUESTGIVER_STATUS                             = 0x07988,   // 4.0.6a 13623
     SMSG_QUESTGIVER_STATUS_MULTIPLE                    = 0x0F5C0,   // 4.0.6a 13623

@@ -1467,6 +1467,7 @@ void Guild::HandleInviteMember(WorldSession* session, const std::string& name)
     WorldPacket data(SMSG_GUILD_INVITE, 8 + 10);              // Guess size
     data << player->GetName();
     data << m_name;
+    
     pInvitee->GetSession()->SendPacket(&data);
 
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Sent (SMSG_GUILD_INVITE)");

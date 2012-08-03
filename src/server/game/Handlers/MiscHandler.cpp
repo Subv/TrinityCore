@@ -82,7 +82,7 @@ void WorldSession::HandleRepopRequestOpcode(WorldPacket & recv_data)
     GetPlayer()->RepopAtGraveyard();
 }
 
-void WorldSession::HandleGossipSelectOptionOpcode(WorldPacket & recv_data)
+void WorldSession::HandleGossipSelectOptionOpcode(WorldPacket& recv_data)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: CMSG_GOSSIP_SELECT_OPTION");
 
@@ -167,7 +167,7 @@ void WorldSession::HandleGossipSelectOptionOpcode(WorldPacket & recv_data)
     }
 }
 
-void WorldSession::HandleWhoOpcode(WorldPacket & recv_data)
+void WorldSession::HandleWhoOpcode(WorldPacket& recv_data)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Recvd CMSG_WHO Message");
 

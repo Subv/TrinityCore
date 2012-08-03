@@ -648,9 +648,7 @@ void WorldSession::HandlePetRename(WorldPacket & recv_data)
     if (isdeclined)
     {
         for (uint8 i = 0; i < MAX_DECLINED_NAME_CASES; ++i)
-        {
             recv_data >> declinedname.name[i];
-        }
 
         std::wstring wname;
         Utf8toWStr(name, wname);
@@ -671,7 +669,7 @@ void WorldSession::HandlePetRename(WorldPacket & recv_data)
         stmt = CharacterDatabase.GetPreparedStatement(CHAR_ADD_CHAR_PET_DECLINEDNAME);
         stmt->setUInt32(0, _player->GetGUIDLow());
 
-        for (uint8 i = 0; i < 5; i++)
+        for (uint8 i = 0; i < MAX_DECLINED_NAME_CASES; i++)
             stmt->setString(i+1, declinedname.name[i]);
 
         trans->Append(stmt);
@@ -688,7 +686,7 @@ void WorldSession::HandlePetRename(WorldPacket & recv_data)
     pet->SetUInt32Value(UNIT_FIELD_PET_NAME_TIMESTAMP, uint32(time(NULL))); // cast can't be helped
 }
 
-void WorldSession::HandlePetAbandon(WorldPacket & recv_data)
+void WorldSession::HandlePetAbandon(WorldPacket& recv_data)
 {
     uint64 guid;
     recv_data >> guid;                                      //pet guid

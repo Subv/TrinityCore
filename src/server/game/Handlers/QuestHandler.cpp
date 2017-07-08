@@ -408,7 +408,16 @@ void WorldSession::HandleQuestgiverRequestRewardOpcode(WorldPackets::Quest::Ques
     TC_LOG_DEBUG("network", "WORLD: Received CMSG_QUESTGIVER_REQUEST_REWARD npc = %s, quest = %u", packet.QuestGiverGUID.ToString().c_str(), packet.QuestID);
 
     Object* object = ObjectAccessor::GetObjectByTypeMask(*_player, packet.QuestGiverGUID, TYPEMASK_UNIT | TYPEMASK_GAMEOBJECT);
-    if (!object || !object->hasInvolvedQuest(packet.QuestID))
+    if (!object)
+        return;
+
+    Quest const* quest = sObjectMgr->GetQuestTemplate(packet.QuestID);
+
+    if (!quest)
+        return;
+
+    // Don't allow players to request quest rewards on an unrelated object.
+    if (!quest->HasFlag(QUEST_FLAGS_AUTOCOMPLETE) && !object->hasInvolvedQuest(packet.QuestID))
         return;
 
     // some kind of WPE protection
@@ -421,8 +430,7 @@ void WorldSession::HandleQuestgiverRequestRewardOpcode(WorldPackets::Quest::Ques
     if (_player->GetQuestStatus(packet.QuestID) != QUEST_STATUS_COMPLETE)
         return;
 
-    if (Quest const* quest = sObjectMgr->GetQuestTemplate(packet.QuestID))
-        _player->PlayerTalkClass->SendQuestGiverOfferReward(quest, packet.QuestGiverGUID, true);
+     _player->PlayerTalkClass->SendQuestGiverOfferReward(quest, packet.QuestGiverGUID, true);
 }
 
 void WorldSession::HandleQuestLogRemoveQuest(WorldPackets::Quest::QuestLogRemoveQuest& packet)
